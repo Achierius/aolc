@@ -45,7 +45,7 @@ char *strrchr(const char *str, int c)
         return NULL;
 }
 
-int stcmp(const char *str1, const char *str2)
+int strcmp(const char *str1, const char *str2)
 {       /* TODO */
         return 0;
 }
