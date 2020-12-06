@@ -20,6 +20,8 @@ yet to be implemented internally in assembly.
 ### /test
 Includes tests for each function within `<string.h>` as defined by the C
 Standard. May end up pulling from GNU and Newlib for help on this front.
+### /build
+Contains build erratta and produced binaries.
 
 ## Implementation Status
 |  C Header  |  C Function  |  Status  |
@@ -48,7 +50,10 @@ Standard. May end up pulling from GNU and Newlib for help on this front.
 |`<string.h>`|strxfrm| TODO |
 
 ## Usage
-TODO
+WIP
+### Tests
+Simply run `make test` in the project root directory to build and run the test
+suite.
 
 ## Technical Notes
 ### Style
