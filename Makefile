@@ -15,16 +15,16 @@ C_SRC_DIR = ${SRC_DIR}/c
 ASM_SRC_DIR = ${SRC_DIR}/asm
 
 C_STUB_FILE = string_stubs.c
-C_EXPORT_FILE = string.h
 LIBNAME = aolc
 
 TEST_NAMES = test_linkages
 TESTS = $(addprefix $(TESTS_DIR)/,$(addsuffix .c,$(TEST_NAMES)))
 
-STRING_FUNCTIONS = hello_world ok
-#STRING_FUNCTIONS = memcpy memmove memchr memcmp memset strcat strncat strchr \
-#                   strrchr strcmp strncmp strcoll strcpy strncpy strerror strlen \
-#									 strspn sstrcspn trpbrk strstr strtok strxfrm
+#STRING_FUNCTIONS = hello_world ok
+STRING_FUNCTIONS = memcpy memmove memchr memcmp memset strcat strncat strchr \
+                   strrchr strcmp strncmp strcoll strcpy strncpy strerror strlen \
+									 strspn strcspn strpbrk strstr strtok strxfrm \
+									 hello_world
 STRING_FILES_ASM = $(addprefix $(ASM_SRC_DIR)/,$(addsuffix .S,$(STRING_FUNCTIONS)))
 STRING_FILES_O = $(addprefix $(BUILD_DIR)/,$(addsuffix .o,$(STRING_FUNCTIONS)))
 
@@ -40,12 +40,12 @@ demo: $(LIBNAME).a
 	@./demo
 	@rm demo
 
-test:
+test: $(LIBNAME).a
 	@echo "Executing tests"
 	@mkdir -p ./$(BUILD_DIR)
-	@for test in $(TESTS) ; do \
+	for test in $(TESTS) ; do \
 		echo " > Performing test $$test..." ; \
-		$(CC) $(CFLAGS) -I$(C_EXPORT_FILE) $(C_SRC_DIR)/$(C_STUB_FILE) $$test -o$(BUILD_DIR)/test.o ; \
+		$(CC) $(CFLAGS) -I$(INCLUDE_DIR) $$test $(LIBNAME).a -o $(BUILD_DIR)/test.o ; \
 		$(BUILD_DIR)/test.o ; \
 		rm $(BUILD_DIR)/test.o ; \
 		echo "              test $$test passed" ; \
