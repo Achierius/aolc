@@ -16,7 +16,7 @@ ASM_SRC_DIR = ${SRC_DIR}/asm
 C_STUB_FILE = string_stubs.c
 LIBNAME = aolc
 
-TEST_NAMES = test_linkages test_strlen
+TEST_NAMES = test_linkages test_memset
 TESTS = $(addprefix $(TESTS_DIR)/,$(addsuffix .c,$(TEST_NAMES)))
 
 STRING_FUNCTIONS = memcpy memmove memchr memcmp memset strcat strncat strchr \
