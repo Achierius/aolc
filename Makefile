@@ -2,31 +2,56 @@
 #  - We get an actual testing suite
 #  - We start compiling asm into static libs
 
-INCLUDE_DIR = include
-C_SRC_DIR = src/c
-ASM_SRC_DIR = src/asm
+ASMC = nasm
+ASMFLAGS = -f elf64
+CC = gcc
+CFLAGS = -no-pie
+
+SRC_DIR = src
 BUILD_DIR = build
+TESTS_DIR = tests
+INCLUDE_DIR = include
+C_SRC_DIR = ${SRC_DIR}/c
+ASM_SRC_DIR = ${SRC_DIR}/asm
 
 C_STUB_FILE = string_stubs.c
 C_EXPORT_FILE = string.h
+LIBNAME = aolc
 
-TESTS_DIR = tests
 TEST_NAMES = test_linkages
 TESTS = $(addprefix $(TESTS_DIR)/,$(addsuffix .c,$(TEST_NAMES)))
 
-GCC_FLAGS = $(C_SRC_DIR)/$(C_STUB_FILE) -I$(C_EXPORT_FILE)
+STRING_FUNCTIONS = hello_world ok
+#STRING_FUNCTIONS = memcpy memmove memchr memcmp memset strcat strncat strchr \
+#                   strrchr strcmp strncmp strcoll strcpy strncpy strerror strlen \
+#									 strspn sstrcspn trpbrk strstr strtok strxfrm
+STRING_FILES_ASM = $(addprefix $(ASM_SRC_DIR)/,$(addsuffix .S,$(STRING_FUNCTIONS)))
+STRING_FILES_O = $(addprefix $(BUILD_DIR)/,$(addsuffix .o,$(STRING_FUNCTIONS)))
+
+$(STRING_FILES_O): $(BUILD_DIR)/%.o: $(ASM_SRC_DIR)/%.S
+	@echo " > Compiling assembly for $@..."
+	$(ASMC) $(ASMFLAGS) $^ -o $(BUILD_DIR)/$*.o
+
+$(LIBNAME).a: $(STRING_FILES_O)
+	ar rvs $(LIBNAME).a $(STRING_FILES_O)
+
+demo: $(LIBNAME).a
+	$(CC) $(CFLAGS) $(C_SRC_DIR)/demo.c $(LIBNAME).a -o demo
+	@./demo
+	@rm demo
 
 test:
 	@echo "Executing tests"
 	@mkdir -p ./$(BUILD_DIR)
 	@for test in $(TESTS) ; do \
 		echo " > Performing test $$test..." ; \
-		gcc $(GCC_FLAGS) $$test -o$(BUILD_DIR)/test.o ; \
-		./$(BUILD_DIR)/test.o ; \
-		rm ./$(BUILD_DIR)/test.o ; \
+		$(CC) $(CFLAGS) -I$(C_EXPORT_FILE) $(C_SRC_DIR)/$(C_STUB_FILE) $$test -o$(BUILD_DIR)/test.o ; \
+		$(BUILD_DIR)/test.o ; \
+		rm $(BUILD_DIR)/test.o ; \
 		echo "              test $$test passed" ; \
 	done
 	@echo "All tests passed"
 
 clean:
-	rm -r $(BUILD_DIR)
+	rm $(BUILD_DIR)/*
+	rm ./aolc.a
