@@ -41,7 +41,7 @@ Contains build erratta and produced binaries.
 |`<string.h>`|strcpy| TODO |
 |`<string.h>`|strncpy| TODO |
 |`<string.h>`|strerror| TODO |
-|`<string.h>`|strlen| TODO |
+|`<string.h>`|strlen| Done |
 |`<string.h>`|strspn| TODO |
 |`<string.h>`|strcspn| TODO |
 |`<string.h>`|strpbrk| TODO |
