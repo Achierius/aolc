@@ -26,7 +26,7 @@ Contains build erratta and produced binaries.
 ## Implementation Status
 |  C Header  |  C Function  |  Status  |
 |:-----------|:-------------|:--------:|
-|`<string.h>`|memcpy| TODO |
+|`<string.h>`|memcpy| Done |
 |`<string.h>`|memmove| TODO |
 |`<string.h>`|memchr| TODO |
 |`<string.h>`|memcmp| TODO |
