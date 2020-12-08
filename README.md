@@ -39,7 +39,7 @@ Contains build erratta and produced binaries.
 |`<string.h>`|strncmp| TODO |
 |`<string.h>`|strcoll| TODO |
 |`<string.h>`|strcpy| TODO |
-|`<string.h>`|strncpy| TODO |
+|`<string.h>`|strncpy| Done |
 |`<string.h>`|strerror| TODO |
 |`<string.h>`|strlen| Done |
 |`<string.h>`|strspn| TODO |
