@@ -89,6 +89,13 @@ Presently, all assembly is written with the assumption that the corresponding
 C declaration is annotated with `__asmlinkage`, and thus that all arguments are
 passed in on the stack. Support for `__fastcall` may be implemented in the
 future.
+### Useful References
+ - [Wikibooks page on <string.h>](https://en.wikibooks.org/wiki/C_Programming/string.h)
+ - [glibc reference manual](https://www.gnu.org/software/libc/manual/pdf/libc.pdf)
+ - [musl reference manual](https://musl.libc.org/manual.html)
+ - [x86-64 cheat sheet](https://cs.brown.edu/courses/cs033/docs/guides/x64_cheatsheet.pdf)
+ - [x86-64 calling convention](https://aaronbloomfield.github.io/pdr/book/x86-64bit-ccc-chapter.pdf)
+
 
 ## General Notes
 ### Motivation
