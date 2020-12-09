@@ -43,10 +43,10 @@ Contains build erratta and produced binaries.
 |`<string.h>`|strncat| TODO ||
 |`<string.h>`|strchr| TODO ||
 |`<string.h>`|strrchr| TODO ||
-|`<string.h>`|strcmp| TODO | Scott Durand <sdurand543> |
-|`<string.h>`|strncmp| TODO | Scott Durand <sdurand543> |
+|`<string.h>`|strcmp| TODO | Scott Durand <sdurand543@berkeley.edu> |
+|`<string.h>`|strncmp| TODO | Scott Durand <sdurand543@berkeley.edu> |
 |`<string.h>`|strcoll| TODO ||
-|`<string.h>`|strcpy| TODO ||
+|`<string.h>`|strcpy| TODO | Marcus Plutowski <achierius@gmail.com> |
 |`<string.h>`|strncpy| Done | Marcus Plutowski <achierius@gmail.com> |
 |`<string.h>`|strerror| TODO ||
 |`<string.h>`|strlen| Done | Marcus Plutowski <achierius@gmail.com> |
