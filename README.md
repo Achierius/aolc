@@ -30,7 +30,7 @@ Contains build erratta and produced binaries.
 |`<string.h>`|memmove| TODO |
 |`<string.h>`|memchr| TODO |
 |`<string.h>`|memcmp| TODO |
-|`<string.h>`|memset| TODO |
+|`<string.h>`|memset| Done |
 |`<string.h>`|strcat| TODO |
 |`<string.h>`|strncat| TODO |
 |`<string.h>`|strchr| TODO |
