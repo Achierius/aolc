@@ -28,12 +28,14 @@ STRING_FILES_O = $(addprefix $(BUILD_DIR)/,$(addsuffix .o,$(STRING_FUNCTIONS)))
 
 lib: $(LIBNAME).a
 
+check: FORCE tests
+
 demo: $(LIBNAME).a
 	$(CC) $(CFLAGS) $(C_SRC_DIR)/demo.c $(LIBNAME).a -o demo
 	@./demo
 	@rm demo
 
-test: $(LIBNAME).a
+tests: $(LIBNAME).a
 	@echo "Executing tests"
 	@mkdir -p ./$(BUILD_DIR)
 	for test in $(TESTS) ; do \
@@ -56,3 +58,4 @@ $(STRING_FILES_O): $(BUILD_DIR)/%.o: $(ASM_SRC_DIR)/%.S
 $(LIBNAME).a: $(STRING_FILES_O)
 	ar rvs $(LIBNAME).a $(STRING_FILES_O)
 
+FORCE:
