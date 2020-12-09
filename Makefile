@@ -26,12 +26,7 @@ STRING_FUNCTIONS = memcpy memmove memchr memcmp memset strcat strncat strchr \
 STRING_FILES_ASM = $(addprefix $(ASM_SRC_DIR)/,$(addsuffix .S,$(STRING_FUNCTIONS)))
 STRING_FILES_O = $(addprefix $(BUILD_DIR)/,$(addsuffix .o,$(STRING_FUNCTIONS)))
 
-$(STRING_FILES_O): $(BUILD_DIR)/%.o: $(ASM_SRC_DIR)/%.S
-	@echo " > Compiling assembly for $@..."
-	$(ASMC) $(ASMFLAGS) $^ -o $(BUILD_DIR)/$*.o
-
-$(LIBNAME).a: $(STRING_FILES_O)
-	ar rvs $(LIBNAME).a $(STRING_FILES_O)
+lib: $(LIBNAME).a
 
 demo: $(LIBNAME).a
 	$(CC) $(CFLAGS) $(C_SRC_DIR)/demo.c $(LIBNAME).a -o demo
@@ -53,3 +48,11 @@ test: $(LIBNAME).a
 clean:
 	rm $(BUILD_DIR)/*
 	rm ./aolc.a
+
+$(STRING_FILES_O): $(BUILD_DIR)/%.o: $(ASM_SRC_DIR)/%.S
+	@echo " > Compiling assembly for $@..."
+	$(ASMC) $(ASMFLAGS) $^ -o $(BUILD_DIR)/$*.o
+
+$(LIBNAME).a: $(STRING_FILES_O)
+	ar rvs $(LIBNAME).a $(STRING_FILES_O)
+
