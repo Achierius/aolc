@@ -26,11 +26,11 @@ Contains build erratta and produced binaries.
 ## Implementation Status
 |  C Header  |  C Function  |  Status  |  Handler |
 |:-----------|:-------------|:--------:|:--------:|
-|`<string.h>`|memcpy| Done | Marcus Plutowski <achierius@berkeley.edu> |
+|`<string.h>`|memcpy| Done | Marcus Plutowski <achierius@gmail.edu> |
 |`<string.h>`|memmove| TODO ||
 |`<string.h>`|memchr| TODO ||
 |`<string.h>`|memcmp| TODO ||
-|`<string.h>`|memset| Done | Marcus Plutowski <achierius@berkeley.edu> |
+|`<string.h>`|memset| Done | Marcus Plutowski <achierius@gmail.edu> |
 |`<string.h>`|strcat| TODO ||
 |`<string.h>`|strncat| TODO ||
 |`<string.h>`|strchr| TODO ||
@@ -39,9 +39,9 @@ Contains build erratta and produced binaries.
 |`<string.h>`|strncmp| TODO ||
 |`<string.h>`|strcoll| TODO ||
 |`<string.h>`|strcpy| TODO ||
-|`<string.h>`|strncpy| Done | Marcus Plutowski <achierius@berkeley.edu> |
+|`<string.h>`|strncpy| Done | Marcus Plutowski <achierius@gmail.edu> |
 |`<string.h>`|strerror| TODO ||
-|`<string.h>`|strlen| Done | Marcus Plutowski <achierius@berkeley.edu> |
+|`<string.h>`|strlen| Done | Marcus Plutowski <achierius@gmail.edu> |
 |`<string.h>`|strspn| TODO ||
 |`<string.h>`|strcspn| TODO ||
 |`<string.h>`|strpbrk| TODO ||
@@ -52,14 +52,14 @@ Contains build erratta and produced binaries.
 ## Usage
 In order to use the functions implemented thus far, simply run `make lib` and
 link the static library (aolc.a) that it generates; within your code, make sure
-to import `"string.h"`, _not_ '<string.h>`, at least until we finish the libc
+to import `"string.h"`, _not_ `<string.h>`, at least until we finish the libc
 package with `<string.h>` swapped out.
 
 
-### Contributing
+## Contributing
 ### Branch Convention
-For now, simply make sure to develop implementations for function <X> on the
-branch `feature/string/<X>`. Rebase before merging, and make sure your
+For now, simply make sure to develop implementations for function `<X>` on the
+branch `feature/string/<X>` — i.e. `strlen` is managed on `feature/string/strlen`. Rebase before merging, and make sure your
 merges/PRs target develop.
 ### Tests
 Simply run `make test` in the project root directory to build and run the test
@@ -70,18 +70,18 @@ With regards to C code, this project uses the Linux Kernel style guide, followin
 in the style of musl. Determining an appropriate style guide for the underlying
 assembly is a work-in-progress; broadly, make sure to thoroughly (albeit not
 excessively) comment all code. Of particular importance is annotating the
-contents/purposes of the registers you're using at least once per function --
+contents/purposes of the registers you're using at least once per function —
 this helps greatly with readability.
 
 ## Technical Notes
 ### Compatability 
 As-is, this project is set up to build solely on ELF64-compatible
 architectures; however, changing the Makefile to build for other architectures
-wouldn't be too hard, within reason -- as long as they're still x86-64
+wouldn't be too hard, within reason — as long as they're still x86-64
 compatible, of course.
-## Static Library?
+### Static Library?
 As of right now, _no_ extant assembly implementations have been written so as
-to be position-independent -- as such, creating a PIE binary (as would be
+to be position-independent — as such, creating a PIE binary (as would be
 required for a shared/dynamic library) is not possible. This may be a goal in
 the future, but it is not as of right now.
 ### Calling Convention
