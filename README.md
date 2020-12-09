@@ -24,30 +24,30 @@ Standard. May end up pulling from GNU and Newlib for help on this front.
 Contains build erratta and produced binaries.
 
 ## Implementation Status
-|  C Header  |  C Function  |  Status  |
-|:-----------|:-------------|:--------:|
-|`<string.h>`|memcpy| Done |
-|`<string.h>`|memmove| TODO |
-|`<string.h>`|memchr| TODO |
-|`<string.h>`|memcmp| TODO |
-|`<string.h>`|memset| Done |
-|`<string.h>`|strcat| TODO |
-|`<string.h>`|strncat| TODO |
-|`<string.h>`|strchr| TODO |
-|`<string.h>`|strrchr| TODO |
-|`<string.h>`|strcmp| TODO |
-|`<string.h>`|strncmp| TODO |
-|`<string.h>`|strcoll| TODO |
-|`<string.h>`|strcpy| TODO |
-|`<string.h>`|strncpy| Done |
-|`<string.h>`|strerror| TODO |
-|`<string.h>`|strlen| Done |
-|`<string.h>`|strspn| TODO |
-|`<string.h>`|strcspn| TODO |
-|`<string.h>`|strpbrk| TODO |
-|`<string.h>`|strstr| TODO |
-|`<string.h>`|strtok| TODO |
-|`<string.h>`|strxfrm| TODO |
+|  C Header  |  C Function  |  Status  |  Handler |
+|:-----------|:-------------|:--------:|:--------:|
+|`<string.h>`|memcpy| Done | Marcus Plutowski <achierius@berkeley.edu> |
+|`<string.h>`|memmove| TODO ||
+|`<string.h>`|memchr| TODO ||
+|`<string.h>`|memcmp| TODO ||
+|`<string.h>`|memset| Done | Marcus Plutowski <achierius@berkeley.edu> |
+|`<string.h>`|strcat| TODO ||
+|`<string.h>`|strncat| TODO ||
+|`<string.h>`|strchr| TODO ||
+|`<string.h>`|strrchr| TODO ||
+|`<string.h>`|strcmp| TODO ||
+|`<string.h>`|strncmp| TODO ||
+|`<string.h>`|strcoll| TODO ||
+|`<string.h>`|strcpy| TODO ||
+|`<string.h>`|strncpy| Done | Marcus Plutowski <achierius@berkeley.edu> |
+|`<string.h>`|strerror| TODO ||
+|`<string.h>`|strlen| Done | Marcus Plutowski <achierius@berkeley.edu> |
+|`<string.h>`|strspn| TODO ||
+|`<string.h>`|strcspn| TODO ||
+|`<string.h>`|strpbrk| TODO ||
+|`<string.h>`|strstr| TODO ||
+|`<string.h>`|strtok| TODO ||
+|`<string.h>`|strxfrm| TODO ||
 
 ## Usage
 WIP
