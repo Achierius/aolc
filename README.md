@@ -17,6 +17,14 @@ found.
 This is where the aforementioned small amount of C code is located.
 Currently, also includes stub-implementations of any standard functions which have
 yet to be implemented internally in assembly.
+### /lib
+Contains produced static libraries.
+#### /lib/`aolc.a`
+The core library produced by the project; contains all reimplementations of the
+given libc headers.
+#### /lib/`sys_libc.a`
+Contains re-exported versions of the actual system libc implementations of the
+given libc headers, prefixed with an underscore -- for use in testing.
 ### /test
 Includes tests for each function within `<string.h>` as defined by the C
 Standard. May end up pulling from GNU and Newlib for help on this front.
@@ -52,8 +60,7 @@ Contains build erratta and produced binaries.
 ## Usage
 In order to use the functions implemented thus far, simply run `make lib` and
 link the static library (aolc.a) that it generates; within your code, make sure
-to import `"string.h"`, _not_ `<string.h>`, at least until we finish the libc
-package with `<string.h>` swapped out.
+to import `<string.h>` and compile with our `string.h` in your include path.
 
 
 ## Contributing

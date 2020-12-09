@@ -7,6 +7,7 @@ CC = gcc
 CFLAGS = -no-pie -fno-asynchronous-unwind-tables -fno-exceptions -masm=intel
 
 SRC_DIR = src
+LIBS_DIR = lib
 BUILD_DIR = build
 TESTS_DIR = tests
 INCLUDE_DIR = include
@@ -18,6 +19,8 @@ LIBNAME = aolc
 
 TEST_NAMES = test_linkages test_strlen test_strncpy test_memcpy test_memcpy
 TESTS = $(addprefix $(TESTS_DIR)/,$(addsuffix .c,$(TEST_NAMES)))
+TEST_LIBNAMES = $(LIBNAME).a sys_libc.a
+TEST_LIBS = $(addprefix $(LIBS_DIR)/,$(TEST_LIBNAMES))
 
 STRING_FUNCTIONS = memcpy memmove memchr memcmp memset strcat strncat strchr \
                    strrchr strcmp strncmp strcoll strcpy strncpy strerror strlen \
@@ -26,21 +29,20 @@ STRING_FUNCTIONS = memcpy memmove memchr memcmp memset strcat strncat strchr \
 STRING_FILES_ASM = $(addprefix $(ASM_SRC_DIR)/,$(addsuffix .S,$(STRING_FUNCTIONS)))
 STRING_FILES_O = $(addprefix $(BUILD_DIR)/,$(addsuffix .o,$(STRING_FUNCTIONS)))
 
-lib: $(LIBNAME).a
+libs: $(TEST_LIBS)
 
 check: FORCE tests
 
-demo: $(LIBNAME).a
-	$(CC) $(CFLAGS) $(C_SRC_DIR)/demo.c $(LIBNAME).a -o demo
+demo: $(LIBS_DIR)/$(LIBNAME).a
+	$(CC) $(CFLAGS) $(C_SRC_DIR)/demo.c $(LIBS_DIR)/$(LIBNAME).a -o demo
 	@./demo
 	@rm demo
 
-tests: $(LIBNAME).a
+tests: $(TEST_LIBS)
 	@echo "Executing tests"
-	@mkdir -p ./$(BUILD_DIR)
 	for test in $(TESTS) ; do \
 		echo " > Performing test $$test..." ; \
-		$(CC) $(CFLAGS) -I$(INCLUDE_DIR) $$test $(LIBNAME).a -o $(BUILD_DIR)/test.o ; \
+		$(CC) $(CFLAGS) -I$(INCLUDE_DIR) $$test $(TEST_LIBS) -o $(BUILD_DIR)/test.o ; \
 		$(CC) -S $(CFLAGS) -I$(INCLUDE_DIR) $$test -o $(BUILD_DIR)/test.S ; \
 		$(BUILD_DIR)/test.o ; \
 		echo "              test $$test passed" ; \
@@ -51,11 +53,21 @@ clean:
 	rm $(BUILD_DIR)/*
 	rm ./aolc.a
 
+$(BUILD_DIR)/_sys_string.o:
+	${CC} ${CFLAGS} -I$(INCLUDE_DIR) -c $(C_SRC_DIR)/_sys_string.c -o $(BUILD_DIR)/_sys_string.o
+
 $(STRING_FILES_O): $(BUILD_DIR)/%.o: $(ASM_SRC_DIR)/%.S
 	@echo " > Compiling assembly for $@..."
 	$(ASMC) $(ASMFLAGS) $^ -o $(BUILD_DIR)/$*.o
 
-$(LIBNAME).a: $(STRING_FILES_O)
-	ar rvs $(LIBNAME).a $(STRING_FILES_O)
+$(LIBS_DIR)/$(LIBNAME).a: $(STRING_FILES_O)
+	@mkdir -p ./$(LIBS_DIR)
+	@mkdir -p ./$(BUILD_DIR)
+	ar rvs $@ $(STRING_FILES_O)
+
+$(LIBS_DIR)/sys_libc.a: $(BUILD_DIR)/_sys_string.o
+	@mkdir -p ./$(LIBS_DIR)
+	@mkdir -p ./$(BUILD_DIR)
+	ar rvs $@ $(BUILD_DIR)/_sys_string.o
 
 FORCE:
