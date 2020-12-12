@@ -28,8 +28,6 @@ $(GBENCH_LIBS): $(GBENCH_MAKE) $(GTEST_LIBS)
 	(cd $(GBENCH_DIR) && make)
 
 libs: $(GTEST_LIBS) $(GBENCH_LIBS)
-	echo $(GTEST_LIBS)
-	echo $(GBENCH_LIBS)
 
 clean:
 	rm $(GBENCH_TEST_LINK)
