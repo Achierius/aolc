@@ -4,7 +4,7 @@
 ASMC = nasm
 ASMFLAGS = -X gnu -f elf64
 CC = g++
-CFLAGS = -no-pie -fno-asynchronous-unwind-tables -fno-exceptions -masm=intel -lpthread
+CFLAGS = -no-pie -fno-asynchronous-unwind-tables -fno-exceptions -masm=intel -std=c++17
 
 SRC_DIR = src
 LIBS_DIR = lib
@@ -38,7 +38,7 @@ libs: $(TEST_LIBS) $(LIBS_DIR)/$(LIBNAME).a
 check: FORCE $(BUILD_DIR)/tests.o
 
 demo: $(LIBS_DIR)/$(LIBNAME).a
-	$(CC) $(CFLAGS) $(C_SRC_DIR)/demo.c $(LIBS_DIR)/$(LIBNAME).a -o demo
+	$(CC) $(CFLAGS) $(C_SRC_DIR)/demo.c $(LIBS_DIR)/$(LIBNAME).a -o demo -pthread
 	@./demo
 	@rm demo
 
@@ -48,7 +48,7 @@ external/googletest/lib/libgtest_main.a external/googletest/lib/libgtest.a:
 
 $(BUILD_DIR)/tests.o: external/googletest/lib/libgtest_main.a external/googletest/lib/libgtest.a \
 	                    $(TESTS) $(TESTS_DIR)/compare_buffer_functions.cpp $(LIBS_DIR)/test_$(LIBNAME).a 
-	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -Iexternal/googletest/googletest/include $^ -o$@
+	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -Iexternal/googletest/googletest/include $^ -o$@ -pthread
 	./$@
 
 clean:
@@ -61,7 +61,7 @@ deep-clean:
 	(cd $(SUBMODULE_DIR) && make clean)
 
 $(BUILD_DIR)/_sys_string.o:
-	${CC} ${CFLAGS} -I$(INCLUDE_DIR) -c $(C_SRC_DIR)/_sys_string.c -o $(BUILD_DIR)/_sys_string.o
+	${CC} ${CFLAGS} -I$(INCLUDE_DIR) -c $(C_SRC_DIR)/_sys_string.c -o $(BUILD_DIR)/_sys_string.o -pthread
 
 $(STRING_FILES_O): $(BUILD_DIR)/%.o: $(ASM_SRC_DIR)/%.S
 	@echo " > Compiling assembly for $@..."
