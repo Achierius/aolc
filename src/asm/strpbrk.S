@@ -1,8 +1,12 @@
 SECTION .DATA
 
 SECTION .TEXT
-	GLOBAL strpbrk.S
+%ifdef OVERRIDE_LIBC_NAMES 
+	GLOBAL strpbrk
+%endif
+	GLOBAL _strpbrk
 
-strpbrk.S:
+_strpbrk:
+strpbrk:
 	mov eax, 0
   ret                   ; Return control

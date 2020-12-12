@@ -1,8 +1,12 @@
 SECTION .DATA
 
 SECTION .TEXT
+%ifdef OVERRIDE_LIBC_NAMES 
 	GLOBAL strlen
+%endif
+	GLOBAL _strlen
 
+_strlen:
 strlen:
   mov  rax, 0
 ; Naive implementation -- TODO improve this along the lines of glibc.
