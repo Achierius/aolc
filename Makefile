@@ -42,17 +42,8 @@ demo: $(LIBS_DIR)/$(LIBNAME).a
 	@./demo
 	@rm demo
 
-#tests: $(TEST_LIBS)
-#	@echo "Executing tests"
-#	for test in $(TESTS) ; do \
-#		echo " > Performing test $$test..." ; \
-#		$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -Iexternal/googletest/googletest/include \
-#	  $$test $(TEST_LIBS) external/googletest/lib/libgtest.a -o $(BUILD_DIR)/test.o ; \
-#		$(BUILD_DIR)/test.o ; \
-#		echo "              test $$test passed" ; \
-#	done
-#	@echo "All tests passed"
 external/googletest/lib/libgtest_main.a external/googletest/lib/libgtest.a:
+	git submodule update --init
 	(cd $(SUBMODULE_DIR) && make libs)
 
 $(BUILD_DIR)/tests.o: external/googletest/lib/libgtest_main.a external/googletest/lib/libgtest.a \
