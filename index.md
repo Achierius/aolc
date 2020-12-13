@@ -1,4 +1,4 @@
-# aocl
+# aolc
 
 ## Usage
 In order to use the functions implemented thus far, simply run `make lib` and
