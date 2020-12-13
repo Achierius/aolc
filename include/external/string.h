@@ -3,6 +3,12 @@
 
 #include <stddef.h>
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+
 void *memcpy(void *dest, const void *src, size_t n);
 
 void *memmove(void *dest, const void *src, size_t n);
@@ -46,5 +52,9 @@ char *strstr(const char *haystack, const char *needle);
 char *strtok(char *str, const char *delim);
 
 size_t strxfrm(char *dest, const char *src, size_t n);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif//__AOLC_STRING_H

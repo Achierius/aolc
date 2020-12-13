@@ -14,8 +14,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: install nasm
-      run: sudo apt-get install nasm
+    - name: install dependencies
+      run: sudo apt-get install nasm; sudo apt-get install libpthread-stubs0-dev
     - name: make dir
       run: mkdir build
     - name: make check

@@ -1,8 +1,12 @@
 SECTION .DATA
 
 SECTION .TEXT
+%ifdef OVERRIDE_LIBC_NAMES 
 	GLOBAL memset
+%endif
+	GLOBAL _memset
 
+_memset:
 memset:
 	mov  rax, rdi
   mov  ecx, edx

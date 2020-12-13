@@ -1,8 +1,12 @@
 SECTION .DATA
 
 SECTION .TEXT
+%ifdef OVERRIDE_LIBC_NAMES 
 	GLOBAL strncpy
+%endif
+	GLOBAL _strncpy
 
+_strncpy:
 strncpy:
 	mov  rax, rdi
   mov  ecx, edx
