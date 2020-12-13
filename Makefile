@@ -21,7 +21,8 @@ ASM_SRC_DIR = ${SRC_DIR}/asm
 C_STUB_FILE = string_stubs.c
 LIBNAME = aolc
 
-TEST_NAMES = test_linkages test_strlen test_strcpy test_strncpy test_memcpy test_memset
+TEST_NAMES = test_linkages test_strlen test_strcpy test_strncpy test_memcpy test_memset \
+						 test_memmove test_strstr test_errno
 TESTS = $(addprefix $(TESTS_DIR)/,$(addsuffix .cpp,$(TEST_NAMES)))
 TESTS_O = $(addprefix $(TESTS_DIR)/,$(addsuffix .cpp,$(TEST_NAMES)))
 TEST_LIBNAMES = test_$(LIBNAME).a sys_libc.a
