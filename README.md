@@ -55,7 +55,7 @@ project as a submodule - currently, google/googletest and google/benchmark.
 | `<string.h>` | strlen       |      Done      |      Basic     | Marcus Plutowski <achierius@gmail.com> |
 | `<string.h>` | strspn       |      TODO      |      Basic     ||
 | `<string.h>` | strcspn      |      TODO      |      Basic     ||
-| `<string.h>` | strpbrk      |      TODO      |      TODO      ||
+| `<string.h>` | strpbrk      |      TODO      |      Basic     ||
 | `<string.h>` | strstr       |      TODO      |      Basic     | Marcus Plutowski <achierius@gmail.com> |
 | `<string.h>` | strtok       |      TODO      |      TODO      ||
 | `<string.h>` | strxfrm      |      TODO      |      TODO      ||

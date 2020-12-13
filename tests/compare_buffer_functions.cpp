@@ -6,29 +6,6 @@
 #include "internal/_test_string.h"
 #include "internal/compare_buffer_functions.h"
 
-/*
- * Class 0: (int)
- *     =>  strerror
- *         >char*
- *
- * Class 1: (char*)
- *     =>  strlen
- *         >size_t
- *
- * Class 2: (char*, char*)
- *     =>  strcat  strcpy  strpbrk  strstr  strtok  strspn  strcspn 
- *         >
- *
- * Class 3: (char*, char*, size_t)
- *     => strncmp  strncpy  strxfrm  memcpy  memmove  memcmp  strncat
- *
- * Class 4: (char*, int)
- *     =>  strchr  strrchr  strcmp  strcoll
- *
- * Class 5: (char*, int, size_t)
- *     =>  memchr  memset
- */
-
 const size_t kMaxBufferSize = 4096;
 const uint8_t kCanaryByte = 0xCA;
 const size_t kCanaryLengthBytes = 4;
