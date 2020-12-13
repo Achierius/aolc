@@ -63,6 +63,7 @@ strncpy_end:
 
 ## Implementation Status
 As of right now, the following components are implemented:
+
 |  C Header  |  C Function  |  Status  |  Maintainer |
 |:-----------|:-------------|:--------:|:--------:|
 |`<string.h>`|memcpy| Done | Marcus Plutowski <achierius@gmail.com> |
