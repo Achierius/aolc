@@ -7,7 +7,8 @@ SPACE := $(EMPTY) $(EMPTY)
 ASMC = nasm
 ASMFLAGS = -X gnu -f elf64
 CC = g++
-CFLAGS = -no-pie -fno-asynchronous-unwind-tables -fno-exceptions -masm=intel -std=c++17 -pthread
+CFLAGS_OPTIMIZATION = -O1 -fno-optimize-strlen -fno-early-inlining -fno-inline -fno-asynchronous-unwind-tables -fno-rtti -fno-exceptions -fno-inline-atomics -fno-inline-functions-called-once -fno-builtin
+CFLAGS = -no-pie -masm=intel -pthread -std=c++17 $(CFLAGS_OPTIMIZATION)
 
 SRC_DIR = src
 LIBS_DIR = lib
@@ -25,7 +26,7 @@ TEST_NAMES = test_linkages test_strlen test_strcpy test_strncpy test_memcpy test
 						 test_memmove test_strstr test_errno test_strspn test_strcspn test_strpbrk
 TESTS = $(addprefix $(TESTS_DIR)/,$(addsuffix .cpp,$(TEST_NAMES)))
 TESTS_O = $(addprefix $(TESTS_DIR)/,$(addsuffix .cpp,$(TEST_NAMES)))
-TEST_LIBNAMES = test_$(LIBNAME).a sys_libc.a
+TEST_LIBNAMES = test_$(LIBNAME).a# sys_libc.a
 TEST_LIBS = $(addprefix $(LIBS_DIR)/,$(TEST_LIBNAMES))
 
 GTEST_DIR = $(SUBMODULE_DIR)/googletest
@@ -56,9 +57,8 @@ check-all: FORCE $(BUILD_DIR)/tests.o
 	./$(BUILD_DIR)/tests.o --gtest_filter=*
 
 demo: $(LIBS_DIR)/$(LIBNAME).a
-	$(CC) $(CFLAGS) -Iinclude/external $(LIBS_DIR)/$(LIBNAME).a  $(C_SRC_DIR)/demo.c -o demo
-	@./demo
-	@rm demo
+	$(CC) $(CFLAGS) -Iinclude/external $(C_SRC_DIR)/demo.c $(LIBS_DIR)/$(LIBNAME).a -o$(BUILD_DIR)/demo
+	@./$(BUILD_DIR)/demo
 
 external/googletest/lib/libgtest_main.a external/googletest/lib/libgtest.a:
 	git submodule update --init
@@ -98,9 +98,9 @@ $(LIBS_DIR)/test_$(LIBNAME).a: $(TEST_STRING_FILES_O)
 	@mkdir -p ./$(BUILD_DIR)
 	ar rvs $@ $(TEST_STRING_FILES_O)
 
-$(LIBS_DIR)/sys_libc.a: $(BUILD_DIR)/_sys_string.o
-	@mkdir -p ./$(LIBS_DIR)
-	@mkdir -p ./$(BUILD_DIR)
-	ar rvs $@ $(BUILD_DIR)/_sys_string.o
+#$(LIBS_DIR)/sys_libc.a: $(BUILD_DIR)/_sys_string.o
+#	@mkdir -p ./$(LIBS_DIR)
+#	@mkdir -p ./$(BUILD_DIR)
+#	ar rvs $@ $(BUILD_DIR)/_sys_string.o
 
 
