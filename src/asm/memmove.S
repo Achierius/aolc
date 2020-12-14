@@ -1,3 +1,4 @@
+; Empty comment
 SECTION .DATA
 
 SECTION .TEXT
