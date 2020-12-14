@@ -35,30 +35,30 @@ Contains external library dependencies, each included within the overall
 project as a submodule - currently, google/googletest and google/benchmark.
 
 ## Implementation Status
-|  C Header  |  C Function  |  Status  |  Handler |
-|:-----------|:-------------|:--------:|:--------:|
-|`<string.h>`|memcpy| Done | Marcus Plutowski <achierius@gmail.com> |
-|`<string.h>`|memmove| TODO ||
-|`<string.h>`|memchr| TODO ||
-|`<string.h>`|memcmp| TODO ||
-|`<string.h>`|memset| Done | Marcus Plutowski <achierius@gmail.com> |
-|`<string.h>`|strcat| TODO ||
-|`<string.h>`|strncat| TODO ||
-|`<string.h>`|strchr| TODO ||
-|`<string.h>`|strrchr| TODO ||
-|`<string.h>`|strcmp| WIP | Scott Durand <sdurand543@berkeley.edu> |
-|`<string.h>`|strncmp| WIP | Scott Durand <sdurand543@berkeley.edu> |
-|`<string.h>`|strcoll| TODO ||
-|`<string.h>`|strcpy| Done | Marcus Plutowski <achierius@gmail.com> |
-|`<string.h>`|strncpy| Done | Marcus Plutowski <achierius@gmail.com> |
-|`<string.h>`|strerror| TODO ||
-|`<string.h>`|strlen| Done | Marcus Plutowski <achierius@gmail.com> |
-|`<string.h>`|strspn| TODO ||
-|`<string.h>`|strcspn| TODO ||
-|`<string.h>`|strpbrk| TODO ||
-|`<string.h>`|strstr| TODO ||
-|`<string.h>`|strtok| TODO ||
-|`<string.h>`|strxfrm| TODO ||
+|   C Header   |  C Function  |  Impl. Status  |  Test Coverage |                  Owner                 |
+|:------------:|:-------------|:--------------:|:--------------:|:---------------------------------------|
+| `<string.h>` | memcpy       |      Done      |      Basic     | Marcus Plutowski <achierius@gmail.com> |
+| `<string.h>` | memmove      |      TODO      |      Basic     ||
+| `<string.h>` | memchr       |      TODO      |      TODO      ||
+| `<string.h>` | memcmp       |      TODO      |      Basic     ||
+| `<string.h>` | memset       |      Done      |      Basic     | Marcus Plutowski <achierius@gmail.com> |
+| `<string.h>` | strcat       |      TODO      |      TODO      ||
+| `<string.h>` | strncat      |      TODO      |      TODO      ||
+| `<string.h>` | strchr       |      TODO      |      TODO      ||
+| `<string.h>` | strrchr      |      TODO      |      TODO      ||
+| `<string.h>` | strcmp       |      WIP       |      TODO      | Scott Durand <sdurand543@berkeley.edu> |
+| `<string.h>` | strncmp      |      WIP       |      TODO      | Scott Durand <sdurand543@berkeley.edu> |
+| `<string.h>` | strcoll      |      TODO      |      TODO      ||
+| `<string.h>` | strcpy       |      Done      |      Basic     | Marcus Plutowski <achierius@gmail.com> |
+| `<string.h>` | strncpy      |      Done      |      Basic     | Marcus Plutowski <achierius@gmail.com> |
+| `<string.h>` | strerror     |      TODO      |     Thorough   ||
+| `<string.h>` | strlen       |      Done      |      Basic     | Marcus Plutowski <achierius@gmail.com> |
+| `<string.h>` | strspn       |      TODO      |      Basic     ||
+| `<string.h>` | strcspn      |      TODO      |      Basic     ||
+| `<string.h>` | strpbrk      |      TODO      |      Basic     ||
+| `<string.h>` | strstr       |      TODO      |      Basic     | Marcus Plutowski <achierius@gmail.com> |
+| `<string.h>` | strtok       |      TODO      |      TODO      ||
+| `<string.h>` | strxfrm      |      TODO      |      TODO      ||
 
 ## Usage
 In order to use the functions implemented thus far, simply run `make lib` and
