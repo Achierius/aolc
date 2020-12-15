@@ -16,6 +16,7 @@ BUILD_DIR = build
 TESTS_DIR = tests
 INCLUDE_DIR = include
 SUBMODULE_DIR = external
+INTERNAL_INCLUDE_DIR = $(INCLUDE_DIR)/internal
 C_SRC_DIR = ${SRC_DIR}/c
 ASM_SRC_DIR = ${SRC_DIR}/asm
 
@@ -57,7 +58,7 @@ check-all: FORCE $(BUILD_DIR)/tests.o
 	./$(BUILD_DIR)/tests.o --gtest_filter=*
 
 demo: $(LIBS_DIR)/$(LIBNAME).a
-	$(CC) $(CFLAGS) -Iinclude/external $(C_SRC_DIR)/demo.c $(LIBS_DIR)/$(LIBNAME).a -o$(BUILD_DIR)/demo
+	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) $(C_SRC_DIR)/demo.c $(LIBS_DIR)/$(LIBNAME).a -o$(BUILD_DIR)/demo
 	@./$(BUILD_DIR)/demo
 
 external/googletest/lib/libgtest_main.a external/googletest/lib/libgtest.a:
@@ -66,13 +67,13 @@ external/googletest/lib/libgtest_main.a external/googletest/lib/libgtest.a:
 
 $(BUILD_DIR)/tests.o: external/googletest/lib/libgtest_main.a external/googletest/lib/libgtest.a \
 	                    $(TESTS) $(TESTS_DIR)/compare_buffer_functions.cpp $(LIBS_DIR)/test_$(LIBNAME).a 
-	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -I$(GTEST_INCLUDE_DIR) $^ -o$@
+	$(CC) $(CFLAGS) -I$(INTERNAL_INCLUDE_DIR) -I$(GTEST_INCLUDE_DIR) $^ -o$@
 
 clean:
 	rm $(BUILD_DIR)/*
 	rm $(LIBS_DIR)/*
 
-deep-clean:
+clean-all:
 	rm $(BUILD_DIR)/*
 	rm $(LIBS_DIR)/*
 	(cd $(SUBMODULE_DIR) && make clean)

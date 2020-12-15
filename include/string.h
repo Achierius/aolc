@@ -1,13 +1,9 @@
-#ifndef __AOLC_STRING_H
-#define __AOLC_STRING_H
-
-#include <stddef.h>
+include <aolc/string_extensions.h>
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
-
 
 void *memcpy(void *dest, const void *src, size_t n);
 
