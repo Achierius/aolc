@@ -1,5 +1,5 @@
-#ifndef __AOLC_STRING_H
-#define __AOLC_STRING_H
+#ifndef __AOLC_TEST_STRING_H
+#define __AOLC_TEST_STRING_H
 
 #include <stddef.h>
 
@@ -57,4 +57,4 @@ size_t _strxfrm(char *dest, const char *src, size_t n);
 }
 #endif
 
-#endif//__AOLC_STRING_H
+#endif//__AOLC_TEST_STRING_H

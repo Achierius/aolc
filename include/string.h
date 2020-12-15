@@ -1,4 +1,7 @@
-include <aolc/string_extensions.h>
+#ifndef __AOLC_STRING_H
+#define __AOLC_STRING_H
+
+#include <aolc/string_extensions.h>
 
 #ifdef __cplusplus
 extern "C"
