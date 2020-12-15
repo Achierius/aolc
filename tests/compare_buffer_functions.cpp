@@ -3,8 +3,8 @@
 #include <cstring>
 #include <mutex>
 #include <iostream>
-#include "internal/_test_string.h"
-#include "internal/compare_buffer_functions.h"
+#include "aolc/_test_string.h"
+#include "aolc/compare_buffer_functions.h"
 
 const size_t kMaxBufferSize = 4096;
 const uint8_t kCanaryByte = 0xCA;

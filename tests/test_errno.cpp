@@ -1,8 +1,8 @@
-#include "internal/_test_string.h"
+#include "aolc/_test_string.h"
 #include <string.h>
 #include <errno.h>
 
-#include "internal/compare_buffer_functions.h"
+#include "aolc/compare_buffer_functions.h"
 #include "gtest/gtest.h"
 
 /* The three following errno values are the only ones required by the C

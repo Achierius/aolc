@@ -1,6 +1,6 @@
 #include <string.h>
-#include "internal/_test_string.h"
-#include "internal/compare_buffer_functions.h"
+#include "aolc/_test_string.h"
+#include "aolc/compare_buffer_functions.h"
 #include "gtest/gtest.h"
 
 #include <assert.h>
