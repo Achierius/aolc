@@ -57,7 +57,7 @@ check-all: FORCE $(BUILD_DIR)/tests.o
 	./$(BUILD_DIR)/tests.o --gtest_filter=*
 
 demo: $(LIBS_DIR)/$(LIBNAME).a
-	$(CC) $(CFLAGS) -Iinclude/external $(C_SRC_DIR)/demo.c $(LIBS_DIR)/$(LIBNAME).a -o$(BUILD_DIR)/demo
+	$(CC) $(CFLAGS) -I$(INCLUDE_DIR) $(C_SRC_DIR)/demo.c $(LIBS_DIR)/$(LIBNAME).a -o$(BUILD_DIR)/demo
 	@./$(BUILD_DIR)/demo
 
 external/googletest/lib/libgtest_main.a external/googletest/lib/libgtest.a:

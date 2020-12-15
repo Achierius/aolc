@@ -35,13 +35,13 @@ this is mostly for the purpose of planning future additions to the
 | C 99         |   `<stdbool.h>`     |      0     |        x       |
 | ANSI C       |   `<stddef.h>`      |      0     |        x       |
 | C 99         |   `<stdint.h>`      |      0     |        x       |
-| ANSI C       |   `<stdio.h>`       |      3-    |        x       |
-| ANSI C       |   `<stdlib.h>`      |      3     |        x       |
+| ANSI C       |   `<stdio.h>`       |      3     |        x       |
+| ANSI C       |   `<stdlib.h>`      |      3-    |        x       |
 | C 11         |   `<stdnoreturn.h>` |      ?     |        x       |
 | ANSI C       |   `<string.h>`      |      2+    |       WIP      |
 | C 99         |   `<tgmath.h>`      |      2+    |        x       |
 | C 11         |   `<threads.h>`     |      3     |        x       |
-| ANSI C       |   `<time.h>`        |      3     |        x       |
+| ANSI C       |   `<time.h>`        |      2     |        x       |
 | C 11         |   `<uchar.h>`       |      1     |        x       |
 | C 95 - NA1   |   `<wchar.h>`       |      2+    |        x       |
 | C 95 - NA1   |   `<wctype.h.h>`    |      2+    |        x       |
