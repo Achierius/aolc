@@ -89,7 +89,9 @@ Warning: repository style is currently mid-transition, so you will likely run
 into code which does not follow style guidelines; we're working on fixing this.
 #### C
 With regards to C code, this project uses the Linux Kernel style guide, following
-in the style of musl. There should be relatively little of this code - 
+in the style of musl. There should, of course, be relatively little of this
+code, _if any_ beyond the core header files - most all of the implementation
+should be written in assembly.
 #### ASM
 Determining an appropriate style guide for the underlying assembly is a work-
 in-progress; broadly, make sure to thoroughly (albeit not excessively)
