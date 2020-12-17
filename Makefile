@@ -55,7 +55,7 @@ STRING_FILES_O = $(addprefix $(BUILD_DIR)/,$(addsuffix .o,$(STRINGH_FNS)))
 TEST_STRING_FILES_O = $(addprefix $(BUILD_DIR)/test_,$(addsuffix .o,$(STRINGH_FNS)))
 
 BENCHMARK_DIR = $(SUBMODULE_DIR)/benchmark
-BENCHMARK_LIBS = $(BENCHMARK_DIR)/src/libbenchmark.a $(BENCHMARK_DIR)/src/libbenchmark_main.a
+BENCHMARK_LIBS = $(BENCHMARK_DIR)/src/libbenchmark.a
 BENCHMARK_INCLUDE_DIR = $(BENCHMARK_DIR)/include
 
 
@@ -85,12 +85,16 @@ demo: $(LIBS_DIR)/$(LIBNAME).a
 	$(CC) $(CFLAGS_CORE) $(CFLAGS_OPTM) -O1 -I$(INCLUDE_DIR) $(C_SRC_DIR)/demo.c $(LIBS_DIR)/$(LIBNAME).a -o$(BUILD_DIR)/demo
 	@./$(BUILD_DIR)/demo
 
+lc = $(subst a,a,$(subst B,b,$(subst C,c,$(subst D,d,$(subst E,e,$(subst F,f,$(subst G,g,$(subst H,h,$(subst I,i,$(subst J,j,$(subst K,k,$(subst L,l,$(subst M,m,$(subst N,n,$(subst O,o,$(subst P,p,$(subst Q,q,$(subst R,r,$(subst S,s,$(subst T,t,$(subst U,u,$(subst V,v,$(subst W,w,$(subst X,x,$(subst Y,y,$(subst Z,z,$1))))))))))))))))))))))))))
+
+uc = $(subst a,A,$(subst b,B,$(subst c,C,$(subst d,D,$(subst e,E,$(subst f,F,$(subst g,G,$(subst h,H,$(subst i,I,$(subst j,J,$(subst k,K,$(subst l,L,$(subst m,M,$(subst n,N,$(subst o,O,$(subst p,P,$(subst q,Q,$(subst r,R,$(subst s,S,$(subst t,T,$(subst u,U,$(subst v,V,$(subst w,W,$(subst x,X,$(subst y,Y,$(subst z,Z,$1))))))))))))))))))))))))))
 
 
-# requires numpy, scipy, and also 'python' defaulting to python3
-bench: COMPARE_PY = $(BENCHMARK_DIR)/tools/compare.py
-bench: $(BUILD_DIR)/bench_glibc-strlen.json $(BUILD_DIR)/bench_aolc-strlen.json $(BENCHMARK_LIBS) | FORCE
-	@echo "\e[4mComparative Benchmark: \e[31mSTRLEN\e[0m"
+# requires that the system 'python' defaults to python3
+bench-%: COMPARE_PY = $(BENCHMARK_DIR)/tools/compare.py
+bench-%: $(BUILD_DIR)/bench_glibc-%.json $(BUILD_DIR)/bench_aolc-%.json $(BENCHMARK_LIBS) | FORCE
+	@pip3 install -r $(BENCHMARK_DIR)/requirements.txt
+	@echo "\e[4mComparative Benchmark: \e[31m$(call uc,$*)\e[0m"
 	$(COMPARE_PY) benchmarks $(word 1,$^) $(word 2,$^)
 
 $(BIN_DIR)/bench_glibc-%.o: $(BENCH_DIR)/bench_%.cpp $(LIBS_DIR)/test_$(LIBNAME).a $(BENCHMARK_LIBS) | $(BIN_DIR)/.sent
@@ -111,8 +115,8 @@ clean:
 	rm $(LIBS_DIR)/*
 
 clean-all: clean
-	rm $(BUILD_DIR)
-	rm $(LIBS_DIR)
+	rmdir $(BUILD_DIR)
+	rmdir $(LIBS_DIR)
 	(cd $(SUBMODULE_DIR) && make clean)
 
 
