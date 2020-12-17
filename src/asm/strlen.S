@@ -1,4 +1,6 @@
 SECTION .DATA
+  .lomagic DB 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01
+  .himagic DB 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80
 
 SECTION .TEXT
 %ifdef OVERRIDE_LIBC_NAMES 
@@ -17,34 +19,31 @@ strlen:
   add  rdi, 8
 .qword_loop_body:
   mov  r11, qword [rdi]
-  mov  r13, 0x0101010101010101
-  sub  r11, r13
+  sub  r11, [.lomagic]
 
   mov  r12, qword [rdi]
   not  r12
-  mov  r13, 0x8080808080808080
-  and  r11, r13
+  and  r11, [.himagic]
 
   and  r11, r12
   jz   .qword_loop
 .dword_loop_prelude:
   jmp .dword_loop_body
 .dword_loop:
-  add rax, 4
-  add rdi, 4
+  add  rax, 4
+  add  rdi, 4
 .dword_loop_body:
   mov  r11d, dword [rdi]
-  mov  r13d, 0x01010101
-  sub  r11d, r13d
+  sub  r11d, [.lomagic]
 
   mov  r12d, dword [rdi]
   not  r12d
-  mov  r13d, 0x80808080
-  and  r11d, r13d
+  and  r11d, [.himagic]
 
   and  r11d, r12d
   jz   .dword_loop
 .byte_scan:
+  
   cmp  byte [rdi + 0], 0
   jz   .end
   inc  rax
