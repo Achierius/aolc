@@ -1,6 +1,7 @@
 #ifndef __AOLC_STRING_H
 #define __AOLC_STRING_H
 
+#include <stddef.h>
 #include <aolc/string_extensions.h>
 
 #ifdef __cplusplus

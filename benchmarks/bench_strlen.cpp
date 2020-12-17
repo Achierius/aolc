@@ -1,184 +1,70 @@
-#include <benchmark/benchmark.h>
-#include <string.h>
+#include "string.h"
+
+#ifdef __BENCH_AOLC__
 #include <aolc/_test_string.h>
+#endif
 
-/* Word-Aligned */
-char len_128[] = "Abcdefg.Abcdefg.Abcdefg.Abcdefg.Abcdefg.Abcdefg.Abcdefg.Abcdefg.Abcdefg.Abcdefg.Abcdefg.Abcdefg.Abcdefg.Abcdefg.Abcdefg.Abcdefg.";
-char len_064[] = "Abcdefg.Abcdefg.Abcdefg.Abcdefg.Abcdefg.Abcdefg.Abcdefg.Abcdefg.";
-char len_032[] = "Abcdefg.Abcdefg.Abcdefg.Abcdefg.";
-char len_016[] = "Abcdefg.Abcdefg.";
-char len_008[] = "Abcdefg.";
-char len_004[] = "Nice";
+#include <benchmark/benchmark.h>
 
-/* This is definitely the best way to do this :) */
-char buff_1024[] = "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
-char* len_1024 = buff_1024;
-char* len_0512 = buff_1024 + 512;
-char* len_0256 = buff_1024 + 512 + 256;
+#include <random>
 
-static void BM_Strlen_aolc_8B_Misaligned(benchmark::State& state) {
-    char* test_str = len_008 + 1;
-    volatile int t = 0;
-    for (auto _ : state) {
-        t = _strlen(test_str);
+template<size_t Len, size_t Off>
+static void BM_Strlen_NBytes(benchmark::State& state) {
+    size_t buffer_len = Len + Off;
+    size_t buffer_off = Off;
+    size_t str_len = Len;
+
+    // We fill the buffer with random bytes to expose any slowdowns that might
+    // occur due to weird byte patterns (e.g. 0x81818181 for certain strlen
+    // implementations which rely on a faster-but-leakier bit hack procedure)
+    char* buffer = new char[buffer_len];
+    std::random_device rd;
+    //  If we want to only scan printable strings:
+    ////std::uniform_int_distribution<char> char_dist(' ', '~'); 
+    std::uniform_int_distribution<char> char_dist(1, 127); 
+    for (size_t i = buffer_off; i < buffer_len - 1; i++) {
+        buffer[i] = char_dist(rd);
     }
+    buffer[buffer_len - 1] = '\0';
+
+    char* test_str = buffer + buffer_off;
+    volatile int unused = 0; // W/o this, gcc removes the strlen even at -O0; the assignment overhead is ~0.1ns
+    for (auto _ : state) {
+            // Only the contents of this loop get benchmarked
+#ifdef __BENCH_AOLC__
+            benchmark::DoNotOptimize(_strlen(test_str));
+#elif  __BENCH_GLIBC__
+            benchmark::DoNotOptimize(strlen(test_str));
+#elif  __BENCH_MUSL__
+            __builtin_unreachable();
+#else
+            __builtin_unreachable();
+#endif
+            benchmark::ClobberMemory();
+    }
+
+    delete[](buffer);
 }
 
-static void BM_Strlen_glibc_8B_Misaligned(benchmark::State& state) {
-    char* test_str = len_008 + 1;
-    volatile int t = 0;
-    for (auto _ : state) {
-        t = strlen(test_str);
-    }
-}
+#define STRLEN_BENCHMARK(X) static void (*Strlen_Len##X)(benchmark::State& state) = &BM_Strlen_NBytes<X, 0>; \
+                            BENCHMARK(Strlen_Len##X);
 
-static void BM_Strlen_aolc_8B(benchmark::State& state) {
-    char* test_str = len_008;
-    volatile int t = 0;
-    for (auto _ : state) {
-        t = _strlen(test_str);
-    }
-}
+#define STRLEN_BENCHMARK_OFF(X, Y) static void (*Strlen_Len##X##_Off##Y)(benchmark::State& state) = &BM_Strlen_NBytes<X, Y>; \
+                                   BENCHMARK(Strlen_Len##X##_Off##Y);
 
-static void BM_Strlen_glibc_8B(benchmark::State& state) {
-    char* test_str = len_008;
-    volatile int t = 0;
-    for (auto _ : state) {
-        t = strlen(test_str);
-    }
-}
+STRLEN_BENCHMARK(4);
+STRLEN_BENCHMARK(8);
+STRLEN_BENCHMARK(16);
+STRLEN_BENCHMARK(32);
+STRLEN_BENCHMARK(64);
+STRLEN_BENCHMARK(256);
+STRLEN_BENCHMARK(4096);
+STRLEN_BENCHMARK(16384);
 
-static void BM_Strlen_aolc_32B(benchmark::State& state) {
-    char* test_str = len_032;
-    volatile int t = 0;
-    for (auto _ : state) {
-        t = _strlen(test_str);
-    }
-}
-
-static void BM_Strlen_glibc_32B(benchmark::State& state) {
-    char* test_str = len_032;
-    volatile int t = 0;
-    for (auto _ : state) {
-        t = strlen(test_str);
-    }
-}
-
-static void BM_Strlen_aolc_64B(benchmark::State& state) {
-    char* test_str = len_064;
-    volatile int t = 0;
-    for (auto _ : state) {
-        t = _strlen(test_str);
-    }
-}
-
-static void BM_Strlen_glibc_64B(benchmark::State& state) {
-    char* test_str = len_064;
-    volatile int t = 0;
-    for (auto _ : state) {
-        t = strlen(test_str);
-    }
-}
-
-static void BM_Strlen_aolc_128B(benchmark::State& state) {
-    char* test_str = len_128;
-    volatile int t = 0;
-    for (auto _ : state) {
-        t = _strlen(test_str);
-    }
-}
-
-static void BM_Strlen_glibc_128B(benchmark::State& state) {
-    char* test_str = len_128;
-    volatile int t = 0;
-    for (auto _ : state) {
-        t = strlen(test_str);
-    }
-}
-
-static void BM_Strlen_aolc_256B(benchmark::State& state) {
-    char* test_str = len_0256;
-    volatile int t = 0;
-    for (auto _ : state) {
-        t = _strlen(test_str);
-    }
-}
-
-static void BM_Strlen_glibc_256B(benchmark::State& state) {
-    char* test_str = len_0256;
-    volatile int t = 0;
-    for (auto _ : state) {
-        t = strlen(test_str);
-    }
-}
-
-static void BM_Strlen_aolc_512B(benchmark::State& state) {
-    char* test_str = len_0512;
-    volatile int t = 0;
-    for (auto _ : state) {
-        t = _strlen(test_str);
-    }
-}
-
-static void BM_Strlen_glibc_512B(benchmark::State& state) {
-    char* test_str = len_0512;
-    volatile int t = 0;
-    for (auto _ : state) {
-        t = strlen(test_str);
-    }
-}
-
-static void BM_Strlen_aolc_1024B(benchmark::State& state) {
-    char* test_str = len_1024;
-    volatile int t = 0;
-    for (auto _ : state) {
-        t = _strlen(test_str);
-    }
-}
-
-static void BM_Strlen_glibc_1024B(benchmark::State& state) {
-    char* test_str = len_1024;
-    volatile int t = 0;
-    for (auto _ : state) {
-        t = strlen(test_str);
-    }
-}
-
-static void BM_Strlen_aolc_32768B(benchmark::State&  state) {
-    char* huge_buffer = (char*) calloc(1, 32768);
-    memset(huge_buffer, '~', 32000);
-    volatile int t = 0;
-    for (auto _ : state) {
-        t = _strlen(huge_buffer);
-    }
-}
-
-static void BM_Strlen_glibc_32768B(benchmark::State&  state) {
-    char* huge_buffer = (char*) calloc(1, 32768);
-    memset(huge_buffer, '~', 32000);
-    volatile int t = 0;
-    for (auto _ : state) {
-        t = strlen(huge_buffer);
-    }
-}
-
-BENCHMARK(BM_Strlen_aolc_8B_Misaligned);
-BENCHMARK(BM_Strlen_aolc_8B);
-BENCHMARK(BM_Strlen_aolc_32B);
-BENCHMARK(BM_Strlen_aolc_64B);
-BENCHMARK(BM_Strlen_aolc_128B);
-BENCHMARK(BM_Strlen_aolc_256B);
-BENCHMARK(BM_Strlen_aolc_512B);
-BENCHMARK(BM_Strlen_aolc_1024B);
-BENCHMARK(BM_Strlen_aolc_32768B);
-BENCHMARK(BM_Strlen_glibc_8B_Misaligned);
-BENCHMARK(BM_Strlen_glibc_8B);
-BENCHMARK(BM_Strlen_glibc_32B);
-BENCHMARK(BM_Strlen_glibc_64B);
-BENCHMARK(BM_Strlen_glibc_128B);
-BENCHMARK(BM_Strlen_glibc_256B);
-BENCHMARK(BM_Strlen_glibc_512B);
-BENCHMARK(BM_Strlen_glibc_1024B);
-BENCHMARK(BM_Strlen_glibc_32768B);
+STRLEN_BENCHMARK(1);
+STRLEN_BENCHMARK(10);
+STRLEN_BENCHMARK(100);
+STRLEN_BENCHMARK(1000);
+STRLEN_BENCHMARK(10000);
 
 BENCHMARK_MAIN();
