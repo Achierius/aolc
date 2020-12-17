@@ -68,30 +68,5 @@ strlen:
   cmp  byte [rdi + 7], 0
   jz   .end
   inc rax
-  cmp  byte [rdi + 8], 0
-  jz   .end
-  inc  rax
-  cmp  byte [rdi + 9], 0
-  jz   .end
-  inc  rax
-  cmp  byte [rdi + 10], 0
-  jz   .end
-  inc  rax
-  cmp  byte [rdi + 11], 0
-  jz   .end
-  inc  rax
-  cmp  byte [rdi + 12], 0
-  jz   .end
-  inc  rax
-  cmp  byte [rdi + 13], 0
-  jz   .end
-  inc  rax
-  cmp  byte [rdi + 14], 0
-  jz   .end
-  inc  rax
-  ; Unnecessary since we know the \0 is within this dword
-  ;cmp  byte [rdi + 15], 0
-  ;jz   .end
-  ;inc  rax
 .end:
   ret                   ; Return control
