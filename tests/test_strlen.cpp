@@ -4,7 +4,7 @@
 #include "aolc/compare_buffer_functions.h"
 #include "gtest/gtest.h"
 
-TEST(StrlenCorrectness, Basic)
+TEST(strlen, Basic)
 {
     char s1[] = "nice string";
     char s2[] = {123, 11, 13, 100, 110, 101, 2, 123, 55, 106, 72, 66, 66, 66, 1, 0};

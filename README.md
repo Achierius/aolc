@@ -28,6 +28,10 @@ given libc headers, prefixed with an underscore -- for use in testing.
 ### /test
 Includes tests for each function within `<string.h>` as defined by the C
 Standard. May end up pulling from GNU and Newlib for help on this front.
+### /benchmarks
+Includes microbenchmark code to compare the speed of our functions to that of
+glibc's equivalent implementations; currently utilizes Google's benchmark
+library.
 ### /docs
 Contains documentation and additional notes.
 ### /build
@@ -122,6 +126,20 @@ When an implementation is ready to PR, make sure to add the name of your file
 to `$(TEST\_NAMES)` and the name of the target function to `$(STRING_FUNCS_DONE)`
 so that `make check` will consider them properly for regression testing; we're
 currently working on a more ergonomic solution for this part of the workflow.
+
+Unlike with tests, we do not expect contributors to necessarily provide
+benchmarks for their own implementations; nevertheless, it is appreciated if
+you have the time.
+#### Running Benchmarks
+In order to run benchmarks for a given function `<X>`, run `make bench-<X>` in
+the project root directory; this will run our benchmark suite on both of our
+and glibc's implementations, then compare the result and print out the
+difference. Note firstly that the 'old' implementation is in this case glibc,
+and secondly that the printed difference is multiplicative; therefore, a
+reported difference of "+1.513000" would indicate that our function took 1.513
+times longer to run than glibc's equivalent implementation.
+
+We are currently exploring multithreading the execution of benchmarks.
 
 ## Technical Notes
 ### Compatability 
