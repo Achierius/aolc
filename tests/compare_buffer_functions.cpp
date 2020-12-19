@@ -165,8 +165,8 @@ void evaluate_memfn(Class3Fn test_memfn, Class3Fn true_memfn, void* dst, void* s
 
     /* Now we compare the contents of both sets of buffers: the behavior of both
      * given functions is expected to be identical on each. */
-    EXPECT_EQ(memcmp(test_dst, true_dst, kMaxBufferSize), 0);
-    EXPECT_EQ(memcmp(test_src, true_src, kMaxBufferSize), 0);
+    EXPECT_EQ(memcmp(test_dst, true_dst, n), 0);
+    EXPECT_EQ(memcmp(test_src, true_src, n), 0);
 
     /* Release global buffers */
     buffers_lock.unlock();
