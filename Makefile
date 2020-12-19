@@ -8,7 +8,7 @@ FORCE:
 
 
 ASMR = nasm
-ASMFLAGS = -X gnu -f elf64
+ASMFLAGS = -X gnu -f elf64 -g
 CC = g++
 CFLAGS_OPTM = -fno-optimize-strlen -fno-early-inlining -fno-inline -fno-asynchronous-unwind-tables -fno-rtti -fno-exceptions -fno-inline-atomics -fno-inline-functions-called-once -fno-builtin
 CFLAGS_CORE = -no-pie -masm=intel -pthread -std=c++17
