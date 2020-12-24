@@ -5,6 +5,9 @@
 #include "gtest/gtest.h"
 
 TEST(strspn, Basic) {
+    using std::placeholders::_1;
+    using std::placeholders::_2;
+
     char str[] = {'x', 'x', 'x', 'X', 'y', 'X', 'X', '\0'};
     char x[]   = "x";
     char xX[]  = "xX";
@@ -12,9 +15,16 @@ TEST(strspn, Basic) {
     char y[]   = "y";
     char xyX[] = "xyX";
 
-    EXPECT_EQ(strspn(str, x), _strspn(str, x));
-    EXPECT_EQ(strspn(str, xX), _strspn(str, xX));
-    EXPECT_EQ(strspn(str, X), _strspn(str, X));
-    EXPECT_EQ(strspn(str, y), _strspn(str, y));
-    EXPECT_EQ(strspn(str, xyX), _strspn(str, xyX));
+    auto CompareBufferFuncEvalStrspn = [&](const char* acc, const char* rej, const char* comment) {
+        auto true_fn = std::bind(strspn, _1, _2);
+        auto test_fn = std::bind(_strspn, _1, _2);
+        SCOPED_TRACE(comment);
+        CompareBufferFuncEval(test_fn, true_fn, s1, s2);
+    };
+
+    CompareBufferFuncEvalStrspn(x, x, "x, x");
+    CompareBufferFuncEvalStrspn(xX, xX, "xX, xX");
+    CompareBufferFuncEvalStrspn(X, X, "X, X");
+    CompareBufferFuncEvalStrspn(y, y, "y, y");
+    CompareBufferFuncEvalStrspn(xyX, xyX, "xyX, xyX");
 }
