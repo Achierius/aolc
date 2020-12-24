@@ -6,6 +6,8 @@
 #include "aolc/_test_string.h"
 #include "aolc/compare_buffer_functions.h"
 
+#include <functional>
+
 const size_t kMaxBufferSize = 4096;
 const uint8_t kCanaryByte = 0xCA;
 const size_t kCanaryLengthBytes = 4;
@@ -51,13 +53,99 @@ void CheckCanaries() {
     CheckCanary(canary_dst2);
 }
 
-void evaluate_strfn(Class2Fn test_strfn, Class2Fn true_strfn, char* dst, char* src)
-{
-    size_t src_len = strnlen(src, kMaxBufferSize) + 1;
-    size_t dst_len = strnlen(dst, kMaxBufferSize) + 1;
 
-    ASSERT_LT(src_len, kMaxBufferSize);
-    ASSERT_LT(dst_len, kMaxBufferSize);
+/* Wrapper for (void* (*)(const void*, const void*)) */
+void CompareBufferFuncEval(ConstVoidBuffFn test_func, ConstVoidBuffFn true_func, const void* s1, const void* s2, size_t l1, size_t l2) {
+    /* Standard compliant, as void* <= const void* */
+    auto test_func_wrapper = [=](void* s1, const void* s2) { return test_func(s1, s2); };
+    auto true_func_wrapper = [=](void* s1, const void* s2) { return true_func(s1, s2); };
+
+    CompareBufferFuncEval(test_func_wrapper, true_func_wrapper, s1, s2, l1, l2);
+}
+
+/* Wrapper for (char* (*)(const char*, const char*)) */
+void CompareBufferFuncEval(ConstCharBuffFn test_func, ConstCharBuffFn true_func, const char* s1, const char* s2, size_t l1, size_t l2) {
+    /* Standard compliant, as char* <= const char* */
+    auto test_func_wrapper = [=](char* s1, const char* s2) { return test_func(s1, s2); };
+    auto true_func_wrapper = [=](char* s1, const char* s2) { return true_func(s1, s2); };
+
+    CompareBufferFuncEval(test_func_wrapper, true_func_wrapper, s1, s2, l1, l2);
+}
+
+/* Wrapper for (char* (*)(char*, const char*)) */
+void CompareBufferFuncEval(CharBuffFn test_func, CharBuffFn true_func,
+                           const char* s1, const char* s2,
+                           size_t l1, size_t l2) {
+
+    /* Standard-compliant, as we're ultimately converting back into char* via
+     * memcpy and such */
+    auto test_func_wrapper = [=](void* s1, const void* s2) { return test_func((char*) s1, (const char*) s2); };
+    auto true_func_wrapper = [=](void* s1, const void* s2) { return true_func((char*) s1, (const char*) s2); };
+
+    CompareBufferFuncEval(test_func_wrapper, true_func_wrapper,
+                                    static_cast<const void*>(s1), static_cast<const void*>(s2), l1, l2);
+}
+
+void CompareBufferFuncEval(ConstSingleVoidBuffFn test_func,
+                                     ConstSingleVoidBuffFn true_func,
+                                     const void* s1, size_t l1) {
+    auto test_func_wrapper = [=](void* s1, const void* s2) { return test_func(s1); };
+    auto true_func_wrapper = [=](void* s1, const void* s2) { return true_func(s1); };
+    
+    CompareBufferFuncEval(test_func_wrapper, true_func_wrapper,
+                                    s1, nullptr, l1, 0);
+}
+
+void CompareBufferFuncEval(SingleVoidBuffFn test_func,
+                                     SingleVoidBuffFn true_func,
+                                     const void* s1, size_t l1) {
+    auto test_func_wrapper = [=](void* s1, const void* s2) { return test_func(s1); };
+    auto true_func_wrapper = [=](void* s1, const void* s2) { return true_func(s1); };
+    
+    CompareBufferFuncEval(test_func_wrapper, true_func_wrapper,
+                                    s1, nullptr, l1, 0);
+}
+
+void CompareBufferFuncEval(ConstSingleCharBuffFn test_func,
+                                     ConstSingleCharBuffFn true_func,
+                                     const char* s1, size_t l1) {
+    auto test_func_wrapper = [=](char* s1, const char* s2) { return test_func(s1); };
+    auto true_func_wrapper = [=](char* s1, const char* s2) { return true_func(s1); };
+    
+    CompareBufferFuncEval(test_func_wrapper, true_func_wrapper,                                    s1, nullptr, l1, 0);
+}
+
+void CompareBufferFuncEval(SingleCharBuffFn test_func,
+                                     SingleCharBuffFn true_func,
+                                     const char* s1, size_t l1) {
+    auto test_func_wrapper = [=](char* s1, const char* s2) { return test_func(s1); };
+    auto true_func_wrapper = [=](char* s1, const char* s2) { return true_func(s1); };
+    
+    CompareBufferFuncEval(test_func_wrapper, true_func_wrapper,
+                                    s1, nullptr, l1, 0);
+}
+
+void CompareBufferFuncEval(CharBuffFn test_func, CharBuffFn true_func, const char* s1, const char* s2) {
+    CompareBufferFuncEval(test_func, true_func, s1, s2, strlen(s1), strlen(s2));
+}
+
+void CompareBufferFuncEval(ConstCharBuffFn test_func, ConstCharBuffFn true_func, const char* s1, const char* s2) {
+    CompareBufferFuncEval(test_func, true_func, s1, s2, strlen(s1), strlen(s2));
+}
+
+void CompareBufferFuncEval(SingleCharBuffFn test_func, SingleCharBuffFn true_func, const char* s1) {
+    CompareBufferFuncEval(test_func, true_func, s1, strlen(s1));
+}
+
+void CompareBufferFuncEval(ConstSingleCharBuffFn test_func, ConstSingleCharBuffFn true_func, const char* s1) {
+    CompareBufferFuncEval(test_func, true_func, s1, strlen(s1));
+}
+
+void CompareBufferFuncEval(VoidBuffFn test_func, VoidBuffFn true_func,
+                           const void* s1, const void* s2,
+                           size_t l1, size_t l2) {
+    ASSERT_LT(l1, kMaxBufferSize);
+    ASSERT_LT(l2, kMaxBufferSize);
 
     /* Prepare to access global buffers */
     buffers_lock.lock();
@@ -66,21 +154,21 @@ void evaluate_strfn(Class2Fn test_strfn, Class2Fn true_strfn, char* dst, char* s
     /* Copy given arguments into global buffers; we now have identical
      * duplicate buffers to pass as arguments to each function, so as
      * to properly compare their functionality. */
-    memmove((char*) buffer_src1, src, src_len);
-    memmove((char*) buffer_src2, src, src_len);
-    memmove((char*) buffer_dst1, dst, dst_len);
-    memmove((char*) buffer_dst2, dst, dst_len);
+    memmove(buffer_dst1, s1, l1);
+    memmove(buffer_dst2, s1, l1);
+    memmove(buffer_src1, s2, l2);
+    memmove(buffer_src2, s2, l2);
 
     /* Alias buffer names for clarity */
-    char* true_src = (char*) buffer_src1;
-    char* test_src = (char*) buffer_src2;
-    char* true_dst = (char*) buffer_dst1;
-    char* test_dst = (char*) buffer_dst2;
+    void* true_s1 = buffer_dst1;
+    void* test_s1 = buffer_dst2;
+    void* true_s2 = buffer_src1;
+    void* test_s2 = buffer_src2;
 
     /* Evaluate each of the given functions and store their return values for
      * later comparison */
-    char* true_retval = true_strfn(true_dst, true_src);
-    char* test_retval = test_strfn(test_dst, test_src);
+    void* true_retval = true_func(true_s1, true_s2);
+    void* test_retval = test_func(test_s1, test_s2);
 
     /* Check to see if any stack canary has been overwritten -- this would
      * indicate a buffer overflow. Assuming we're not dealing with hostile code
@@ -99,75 +187,18 @@ void evaluate_strfn(Class2Fn test_strfn, Class2Fn true_strfn, char* dst, char* s
         EXPECT_EQ(test_retval, nullptr);
         EXPECT_EQ(test_retval, true_retval);
     } else {
-        EXPECT_EQ((intptr_t) true_retval - (intptr_t) true_dst, (intptr_t) test_retval - (intptr_t) test_dst);
+        EXPECT_EQ((intptr_t) true_retval - (intptr_t) true_s1, (intptr_t) test_retval - (intptr_t) test_s1);
     }
 
     /* Now we compare the contents of both sets of buffers: the behavior of both
      * given functions is expected to be identical on each. */
-    EXPECT_EQ(memcmp(test_dst, true_dst, kMaxBufferSize), 0);
-    EXPECT_EQ(memcmp(test_src, true_src, kMaxBufferSize), 0);
+    EXPECT_EQ(memcmp(test_s1, true_s1, kMaxBufferSize), 0);
+    EXPECT_EQ(memcmp(test_s2, true_s2, kMaxBufferSize), 0);
 
     /* Release global buffers */
     buffers_lock.unlock();
 }
 
-void evaluate_strnfn(Class2nFn test_strfn, Class2nFn true_strfn, char* dst, char* src, size_t n)
-{
-    evaluate_memfn((Class3Fn) test_strfn, (Class3Fn) true_strfn, (void*) dst, (void*) src, n);
-}
 
-void evaluate_memfn(Class3Fn test_memfn, Class3Fn true_memfn, void* dst, void* src, size_t n)
-{
-    ASSERT_LT(n, kMaxBufferSize);
 
-    /* Prepare to access global buffers */
-    buffers_lock.lock();
-    CleanBuffers();
-
-    /* Copy given arguments into global buffers; we now have identical
-     * duplicate buffers to pass as arguments to each function, so as
-     * to properly compare their functionality. */
-    memmove((char*) buffer_src1, src, n);
-    memmove((char*) buffer_src2, src, n);
-    memmove((char*) buffer_dst1, dst, n);
-    memmove((char*) buffer_dst2, dst, n);
-
-    /* Alias buffer names for clarity */
-    void* true_src = buffer_src1;
-    void* test_src = buffer_src2;
-    void* true_dst = buffer_dst1;
-    void* test_dst = buffer_dst2;
-
-    /* Evaluate each of the given functions and store their return values for
-     * later comparison */
-    void* true_retval = true_memfn(true_dst, true_src, n);
-    void* test_retval = test_memfn(test_dst, test_src, n);
-
-    /* Check to see if any stack canary has been overwritten -- this would
-     * indicate a buffer overflow. Assuming we're not dealing with hostile code
-     * -- libc <string.h> functions are by no means meant to be safe in this
-     * regard -- this will catch all buffer overruns which write
-     * 'continuously', that is without skipping large segments of memory as
-     * they run out of bounds. */
-    CheckCanaries();
-
-    /* In general, these functions return either their *dst argument or a
-     * pointer to a location within it -- as such, as long as neither function
-     * errors out (by returning nullptr) we don't compare the actual return
-     * values of each function, but rather the offset of their return values
-     * from their *dst argument. */
-    if (true_retval == nullptr || test_retval == nullptr) {
-        EXPECT_EQ(test_retval, nullptr);
-        EXPECT_EQ(test_retval, true_retval);
-    } else {
-        EXPECT_EQ((intptr_t) true_retval - (intptr_t) true_dst, (intptr_t) test_retval - (intptr_t) test_dst);
-    }
-
-    /* Now we compare the contents of both sets of buffers: the behavior of both
-     * given functions is expected to be identical on each. */
-    EXPECT_EQ(memcmp(test_dst, true_dst, kMaxBufferSize), 0);
-    EXPECT_EQ(memcmp(test_src, true_src, kMaxBufferSize), 0);
-
-    /* Release global buffers */
-    buffers_lock.unlock();
-}
+//void CompareBufferComparisonFuncEval(???
