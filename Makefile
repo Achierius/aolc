@@ -31,9 +31,8 @@ SUBMODULE_DIR = external
 C_STUB_FILE = string_stubs.c
 LIBNAME = aolc
 
-#TEST_NAMES = test_linkages test_strlen test_strcpy test_strncpy test_memcpy test_memset \
-#						 test_memmove test_strstr test_errno test_strspn test_strcspn test_strpbrk
-TEST_NAMES = test_strcpy test_memmove
+TEST_NAMES = test_linkages test_strlen test_strcpy test_strncpy test_memcpy test_memset \
+						 test_memmove test_strstr test_errno test_strpbrk
 TESTS = $(addprefix $(TESTS_DIR)/,$(addsuffix .cpp,$(TEST_NAMES)))
 TESTS_O = $(addprefix $(TESTS_DIR)/,$(addsuffix .cpp,$(TEST_NAMES)))
 TEST_LIBNAMES = test_$(LIBNAME).a# sys_libc.a

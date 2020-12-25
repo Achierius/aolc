@@ -33,6 +33,9 @@ TEST(memmove, Basic) {
 }
 
 TEST(memmove, Overlapping) {
+    using std::placeholders::_1;
+    using std::placeholders::_2;
+
     char s1[] = {'a', 'a', 'a', 'a', 'a', 's', 's', 's', 's', 's', 's', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd'};
     char s2[] = {'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'};
 

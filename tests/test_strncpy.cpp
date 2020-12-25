@@ -17,8 +17,8 @@ TEST(strncpy, Basic)
     char goal[]        = {'x', 'x', 'x', 'd', 'e', 'y', 'y', 'y', '\0', '\0', '\0'};
 
     auto CompareBufferFuncEvalStrncpy = [&](const char* s1, const char* s2, size_t len, const char* comment) {
-        auto true_fn = std::bind(strcpy, _1, _2, len);
-        auto test_fn = std::bind(_strcpy, _1, _2, len);
+        auto true_fn = std::bind(strncpy, _1, _2, len);
+        auto test_fn = std::bind(_strncpy, _1, _2, len);
         SCOPED_TRACE(comment);
         CompareBufferFuncEval(test_fn, true_fn, s1, s2, len, len);
     };
