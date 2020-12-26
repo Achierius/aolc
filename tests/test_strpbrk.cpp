@@ -4,10 +4,18 @@
 #include "aolc/compare_buffer_functions.h"
 #include "gtest/gtest.h"
 
-TEST(strpbrk, Basic) {
+void CompareStrpbrkEval(const char* s1,
+                        const char* s2,
+                        const char* comment) {
     using std::placeholders::_1;
     using std::placeholders::_2;
 
+    SCOPED_TRACE(comment);
+    CompareBufferFunctions<char, char, const char>(
+        _strpbrk, static_cast<char* (*)(char*, const char*)>(strpbrk), s1, s2);
+}
+
+TEST(strpbrk, Basic) {
     char str[] = {'x', 'x', 'x', 'X', 'y', 'X', 'X', '\0'};
     char x[]  = "x";
     char xX[] = "xX";
@@ -15,17 +23,10 @@ TEST(strpbrk, Basic) {
     char y[]  = "y";
     char _y[] = "asdasdasdasdasdasdaasdgqweqweasdqweqqe_y";
 
-    auto CompareBufferFuncEvalStrpbrk = [&](const char* s1, const char* s2, const char* comment) {
-        auto true_fn = std::bind(static_cast<char* (*)(char*, const char*)>(strpbrk), _1, _2);
-        auto test_fn = std::bind(_strpbrk, _1, _2);
-        SCOPED_TRACE(comment);
-        CompareBufferFuncEval(test_fn, true_fn, s1, s2);
-    };
-
-    CompareBufferFuncEvalStrpbrk(str, x, "str, x");
-    CompareBufferFuncEvalStrpbrk(str, xX, "str, xX");
-    CompareBufferFuncEvalStrpbrk(str, X, "str, X");
-    CompareBufferFuncEvalStrpbrk(str, y, "str, y");
-    CompareBufferFuncEvalStrpbrk(str, str, "str, str");
-    CompareBufferFuncEvalStrpbrk(str, _y, "str, _y");
+    CompareStrpbrkEval(str, x, "str, x");
+    CompareStrpbrkEval(str, xX, "str, xX");
+    CompareStrpbrkEval(str, X, "str, X");
+    CompareStrpbrkEval(str, y, "str, y");
+    CompareStrpbrkEval(str, str, "str, str");
+    CompareStrpbrkEval(str, _y, "str, _y");
 }

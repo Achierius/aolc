@@ -53,6 +53,63 @@ void CheckCanaries() {
     CheckCanary(canary_dst2);
 }
 
+void CompareBufferFuncEval(VoidBuffFn test_func, VoidBuffFn true_func,
+                           const void* s1, const void* s2,
+                           size_t l1, size_t l2) {
+    ASSERT_LT(l1, kMaxBufferSize);
+    ASSERT_LT(l2, kMaxBufferSize);
+
+    /* Prepare to access global buffers */
+    buffers_lock.lock();
+    CleanBuffers();
+
+    /* Copy given arguments into global buffers; we now have identical
+     * duplicate buffers to pass as arguments to each function, so as
+     * to properly compare their functionality. */
+    memmove(buffer_dst1, s1, l1);
+    memmove(buffer_dst2, s1, l1);
+    memmove(buffer_src1, s2, l2);
+    memmove(buffer_src2, s2, l2);
+
+    /* Alias buffer names for clarity */
+    void* true_s1 = buffer_dst1;
+    void* test_s1 = buffer_dst2;
+    void* true_s2 = buffer_src1;
+    void* test_s2 = buffer_src2;
+
+    /* Evaluate each of the given functions and store their return values for
+     * later comparison */
+    void* true_retval = true_func(true_s1, true_s2);
+    void* test_retval = test_func(test_s1, test_s2);
+
+    /* Check to see if any stack canary has been overwritten -- this would
+     * indicate a buffer overflow. Assuming we're not dealing with hostile code
+     * -- libc <string.h> functions are by no means meant to be safe in this
+     * regard -- this will catch all buffer overruns which write
+     * 'continuously', that is without skipping large segments of memory as
+     * they run out of bounds. */
+    CheckCanaries();
+
+    /* In general, these functions return either their *dst argument or a
+     * pointer to a location within it -- as such, as long as neither function
+     * errors out (by returning nullptr) we don't compare the actual return
+     * values of each function, but rather the offset of their return values
+     * from their *dst argument. */
+    if (true_retval == nullptr || test_retval == nullptr) {
+        EXPECT_EQ(test_retval, nullptr);
+        EXPECT_EQ(test_retval, true_retval);
+    } else {
+        EXPECT_EQ((intptr_t) true_retval - (intptr_t) true_s1, (intptr_t) test_retval - (intptr_t) test_s1);
+    }
+
+    /* Now we compare the contents of both sets of buffers: the behavior of both
+     * given functions is expected to be identical on each. */
+    EXPECT_EQ(memcmp(test_s1, true_s1, kMaxBufferSize), 0);
+    EXPECT_EQ(memcmp(test_s2, true_s2, kMaxBufferSize), 0);
+
+    /* Release global buffers */
+    buffers_lock.unlock();
+}
 
 /* Wrapper for (void* (*)(const void*, const void*)) */
 void CompareBufferFuncEval(ConstVoidBuffFn test_func, ConstVoidBuffFn true_func, const void* s1, const void* s2, size_t l1, size_t l2) {
@@ -64,13 +121,6 @@ void CompareBufferFuncEval(ConstVoidBuffFn test_func, ConstVoidBuffFn true_func,
 }
 
 /* Wrapper for (char* (*)(const char*, const char*)) */
-void CompareBufferFuncEval(ConstCharBuffFn test_func, ConstCharBuffFn true_func, const char* s1, const char* s2, size_t l1, size_t l2) {
-    /* Standard compliant, as char* <= const char* */
-    auto test_func_wrapper = [=](char* s1, const char* s2) { return test_func(s1, s2); };
-    auto true_func_wrapper = [=](char* s1, const char* s2) { return true_func(s1, s2); };
-
-    CompareBufferFuncEval(test_func_wrapper, true_func_wrapper, s1, s2, l1, l2);
-}
 
 /* Wrapper for (char* (*)(char*, const char*)) */
 void CompareBufferFuncEval(CharBuffFn test_func, CharBuffFn true_func,
@@ -141,64 +191,11 @@ void CompareBufferFuncEval(ConstSingleCharBuffFn test_func, ConstSingleCharBuffF
     CompareBufferFuncEval(test_func, true_func, s1, strlen(s1));
 }
 
-void CompareBufferFuncEval(VoidBuffFn test_func, VoidBuffFn true_func,
-                           const void* s1, const void* s2,
-                           size_t l1, size_t l2) {
-    ASSERT_LT(l1, kMaxBufferSize);
-    ASSERT_LT(l2, kMaxBufferSize);
+void CompareBufferFuncEval(ConstCharBuffFn test_func, ConstCharBuffFn true_func, const char* s1, const char* s2, size_t l1, size_t l2) {
+    /* Standard compliant, as char* <= const char* */
+    auto test_func_wrapper = [=](char* s1, const char* s2) { return test_func(s1, s2); };
+    auto true_func_wrapper = [=](char* s1, const char* s2) { return true_func(s1, s2); };
 
-    /* Prepare to access global buffers */
-    buffers_lock.lock();
-    CleanBuffers();
-
-    /* Copy given arguments into global buffers; we now have identical
-     * duplicate buffers to pass as arguments to each function, so as
-     * to properly compare their functionality. */
-    memmove(buffer_dst1, s1, l1);
-    memmove(buffer_dst2, s1, l1);
-    memmove(buffer_src1, s2, l2);
-    memmove(buffer_src2, s2, l2);
-
-    /* Alias buffer names for clarity */
-    void* true_s1 = buffer_dst1;
-    void* test_s1 = buffer_dst2;
-    void* true_s2 = buffer_src1;
-    void* test_s2 = buffer_src2;
-
-    /* Evaluate each of the given functions and store their return values for
-     * later comparison */
-    void* true_retval = true_func(true_s1, true_s2);
-    void* test_retval = test_func(test_s1, test_s2);
-
-    /* Check to see if any stack canary has been overwritten -- this would
-     * indicate a buffer overflow. Assuming we're not dealing with hostile code
-     * -- libc <string.h> functions are by no means meant to be safe in this
-     * regard -- this will catch all buffer overruns which write
-     * 'continuously', that is without skipping large segments of memory as
-     * they run out of bounds. */
-    CheckCanaries();
-
-    /* In general, these functions return either their *dst argument or a
-     * pointer to a location within it -- as such, as long as neither function
-     * errors out (by returning nullptr) we don't compare the actual return
-     * values of each function, but rather the offset of their return values
-     * from their *dst argument. */
-    if (true_retval == nullptr || test_retval == nullptr) {
-        EXPECT_EQ(test_retval, nullptr);
-        EXPECT_EQ(test_retval, true_retval);
-    } else {
-        EXPECT_EQ((intptr_t) true_retval - (intptr_t) true_s1, (intptr_t) test_retval - (intptr_t) test_s1);
-    }
-
-    /* Now we compare the contents of both sets of buffers: the behavior of both
-     * given functions is expected to be identical on each. */
-    EXPECT_EQ(memcmp(test_s1, true_s1, kMaxBufferSize), 0);
-    EXPECT_EQ(memcmp(test_s2, true_s2, kMaxBufferSize), 0);
-
-    /* Release global buffers */
-    buffers_lock.unlock();
+    CompareBufferFuncEval(test_func_wrapper, true_func_wrapper, s1, s2, l1, l2);
 }
-
-
-
 //void CompareBufferComparisonFuncEval(???

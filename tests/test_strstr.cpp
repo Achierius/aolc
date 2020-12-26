@@ -4,10 +4,17 @@
 #include "aolc/compare_buffer_functions.h"
 #include "gtest/gtest.h"
 
-TEST(strstr, Basic) {
+void CompareStrstrEval(const char* s1, const char* s2, const char* comment) {
     using std::placeholders::_1;
     using std::placeholders::_2;
 
+    auto true_fn = std::bind(static_cast<char* (*)(char*, const char*)>(strstr), _1, _2);
+    auto test_fn = std::bind(_strstr, _1, _2);
+    SCOPED_TRACE(comment);
+    CompareBufferFunctions<char, char, const char>(test_fn, true_fn, s1, s2);
+}
+
+TEST(strstr, Basic) {
     char str[] = {'x', 'x', 'x', 'X', 'y', 'X', 'X', '\0'};
     char x[]  = "x";
     char xX[] = "xX";
@@ -15,16 +22,9 @@ TEST(strstr, Basic) {
     char y[]  = "y";
     char XX[] = "XX";
 
-    auto CompareBufferFuncEvalStrstr = [&](const char* s1, const char* s2, const char* comment) {
-        auto true_fn = std::bind(static_cast<char* (*)(char*, const char*)>(strstr), _1, _2);
-        auto test_fn = std::bind(_strstr, _1, _2);
-        SCOPED_TRACE(comment);
-        CompareBufferFuncEval(test_fn, true_fn, s1, s2);
-    };
-
-    CompareBufferFuncEvalStrstr(str, x, "str, x");
-    CompareBufferFuncEvalStrstr(str, xX, "str, xX");
-    CompareBufferFuncEvalStrstr(str, X, "str, X");
-    CompareBufferFuncEvalStrstr(str, y, "str, y");
-    CompareBufferFuncEvalStrstr(str, XX, "str, XX");
+    CompareStrstrEval(str, x, "str, x");
+    CompareStrstrEval(str, xX, "str, xX");
+    CompareStrstrEval(str, X, "str, X");
+    CompareStrstrEval(str, y, "str, y");
+    CompareStrstrEval(str, XX, "str, XX");
 }
