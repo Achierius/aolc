@@ -53,9 +53,14 @@ void CheckCanaries() {
     CheckCanary(canary_dst2);
 }
 
+template <typename T> int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
 void CompareBufferFuncEval(VoidBuffFn test_func, VoidBuffFn true_func,
                            const void* s1, const void* s2,
-                           size_t l1, size_t l2) {
+                           size_t l1, size_t l2,
+                           EqualityMode equality_mode) {
     ASSERT_LT(l1, kMaxBufferSize);
     ASSERT_LT(l2, kMaxBufferSize);
 
@@ -90,112 +95,37 @@ void CompareBufferFuncEval(VoidBuffFn test_func, VoidBuffFn true_func,
      * they run out of bounds. */
     CheckCanaries();
 
-    /* In general, these functions return either their *dst argument or a
-     * pointer to a location within it -- as such, as long as neither function
-     * errors out (by returning nullptr) we don't compare the actual return
-     * values of each function, but rather the offset of their return values
-     * from their *dst argument. */
-    if (true_retval == nullptr || test_retval == nullptr) {
-        EXPECT_EQ(test_retval, nullptr);
-        EXPECT_EQ(test_retval, true_retval);
-    } else {
-        EXPECT_EQ((intptr_t) true_retval - (intptr_t) true_s1, (intptr_t) test_retval - (intptr_t) test_s1);
-    }
-
     /* Now we compare the contents of both sets of buffers: the behavior of both
      * given functions is expected to be identical on each. */
     EXPECT_EQ(memcmp(test_s1, true_s1, kMaxBufferSize), 0);
     EXPECT_EQ(memcmp(test_s2, true_s2, kMaxBufferSize), 0);
 
+    switch (equality_mode) {
+      case EqualityMode::kStrictEquality:
+        EXPECT_EQ(test_retval, true_retval);
+        break;
+      case EqualityMode::kBufferRelativeEquality:
+        /* In general, these functions return either their *dst argument or a
+         * pointer to a location within it -- as such, as long as neither function
+         * errors out (by returning nullptr) we don't compare the actual return
+         * values of each function, but rather the offset of their return values
+         * from their *dst argument. */
+        if (true_retval == nullptr || test_retval == nullptr) {
+            EXPECT_EQ(test_retval, nullptr);
+            EXPECT_EQ(test_retval, true_retval);
+        } else {
+            EXPECT_EQ((intptr_t) true_retval - (intptr_t) true_s1, (intptr_t) test_retval - (intptr_t) test_s1);
+        }
+        break;
+      case EqualityMode::kSignEquality:
+        /* These functions (strcmp, memcmp) return an integer value, in which
+         * the result of their computation is embedded via the sign -- positive
+         * denoting arg2 > arg1, negative denoting arg2 < arg1, and 0 denoting
+         * arg1 == arg2; beyond this, the value is not specified. */
+        EXPECT_EQ(sgn<void*>(true_retval), sgn<void*>(test_retval));
+        break;
+    }
+
     /* Release global buffers */
     buffers_lock.unlock();
 }
-
-/* Wrapper for (void* (*)(const void*, const void*)) */
-void CompareBufferFuncEval(ConstVoidBuffFn test_func, ConstVoidBuffFn true_func, const void* s1, const void* s2, size_t l1, size_t l2) {
-    /* Standard compliant, as void* <= const void* */
-    auto test_func_wrapper = [=](void* s1, const void* s2) { return test_func(s1, s2); };
-    auto true_func_wrapper = [=](void* s1, const void* s2) { return true_func(s1, s2); };
-
-    CompareBufferFuncEval(test_func_wrapper, true_func_wrapper, s1, s2, l1, l2);
-}
-
-/* Wrapper for (char* (*)(const char*, const char*)) */
-
-/* Wrapper for (char* (*)(char*, const char*)) */
-void CompareBufferFuncEval(CharBuffFn test_func, CharBuffFn true_func,
-                           const char* s1, const char* s2,
-                           size_t l1, size_t l2) {
-
-    /* Standard-compliant, as we're ultimately converting back into char* via
-     * memcpy and such */
-    auto test_func_wrapper = [=](void* s1, const void* s2) { return test_func((char*) s1, (const char*) s2); };
-    auto true_func_wrapper = [=](void* s1, const void* s2) { return true_func((char*) s1, (const char*) s2); };
-
-    CompareBufferFuncEval(test_func_wrapper, true_func_wrapper,
-                                    static_cast<const void*>(s1), static_cast<const void*>(s2), l1, l2);
-}
-
-void CompareBufferFuncEval(ConstSingleVoidBuffFn test_func,
-                                     ConstSingleVoidBuffFn true_func,
-                                     const void* s1, size_t l1) {
-    auto test_func_wrapper = [=](void* s1, const void* s2) { return test_func(s1); };
-    auto true_func_wrapper = [=](void* s1, const void* s2) { return true_func(s1); };
-    
-    CompareBufferFuncEval(test_func_wrapper, true_func_wrapper,
-                                    s1, nullptr, l1, 0);
-}
-
-void CompareBufferFuncEval(SingleVoidBuffFn test_func,
-                                     SingleVoidBuffFn true_func,
-                                     const void* s1, size_t l1) {
-    auto test_func_wrapper = [=](void* s1, const void* s2) { return test_func(s1); };
-    auto true_func_wrapper = [=](void* s1, const void* s2) { return true_func(s1); };
-    
-    CompareBufferFuncEval(test_func_wrapper, true_func_wrapper,
-                                    s1, nullptr, l1, 0);
-}
-
-void CompareBufferFuncEval(ConstSingleCharBuffFn test_func,
-                                     ConstSingleCharBuffFn true_func,
-                                     const char* s1, size_t l1) {
-    auto test_func_wrapper = [=](char* s1, const char* s2) { return test_func(s1); };
-    auto true_func_wrapper = [=](char* s1, const char* s2) { return true_func(s1); };
-    
-    CompareBufferFuncEval(test_func_wrapper, true_func_wrapper,                                    s1, nullptr, l1, 0);
-}
-
-void CompareBufferFuncEval(SingleCharBuffFn test_func,
-                                     SingleCharBuffFn true_func,
-                                     const char* s1, size_t l1) {
-    auto test_func_wrapper = [=](char* s1, const char* s2) { return test_func(s1); };
-    auto true_func_wrapper = [=](char* s1, const char* s2) { return true_func(s1); };
-    
-    CompareBufferFuncEval(test_func_wrapper, true_func_wrapper,
-                                    s1, nullptr, l1, 0);
-}
-
-void CompareBufferFuncEval(CharBuffFn test_func, CharBuffFn true_func, const char* s1, const char* s2) {
-    CompareBufferFuncEval(test_func, true_func, s1, s2, strlen(s1), strlen(s2));
-}
-
-void CompareBufferFuncEval(ConstCharBuffFn test_func, ConstCharBuffFn true_func, const char* s1, const char* s2) {
-    CompareBufferFuncEval(test_func, true_func, s1, s2, strlen(s1), strlen(s2));
-}
-
-void CompareBufferFuncEval(SingleCharBuffFn test_func, SingleCharBuffFn true_func, const char* s1) {
-    CompareBufferFuncEval(test_func, true_func, s1, strlen(s1));
-}
-
-void CompareBufferFuncEval(ConstSingleCharBuffFn test_func, ConstSingleCharBuffFn true_func, const char* s1) {
-    CompareBufferFuncEval(test_func, true_func, s1, strlen(s1));
-}
-
-void CompareBufferFuncEval(ConstCharBuffFn test_func, ConstCharBuffFn true_func, const char* s1, const char* s2, size_t l1, size_t l2) {
-    /* Standard compliant, as char* <= const char* */
-    auto test_func_wrapper = [=](char* s1, const char* s2) { return test_func(s1, s2); };
-    auto true_func_wrapper = [=](char* s1, const char* s2) { return true_func(s1, s2); };
-
-    CompareBufferFuncEval(test_func_wrapper, true_func_wrapper, s1, s2, l1, l2);
-}
-//void CompareBufferComparisonFuncEval(???
