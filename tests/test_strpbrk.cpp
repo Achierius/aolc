@@ -11,8 +11,9 @@ void CompareStrpbrkEval(const char* s1,
     using std::placeholders::_2;
 
     SCOPED_TRACE(comment);
-    CompareBufferFunctions<char, char, const char>(
-        _strpbrk, static_cast<char* (*)(char*, const char*)>(strpbrk), s1, s2);
+    CompareBufferFunctions<char*, char*, const char*>(
+        _strpbrk, static_cast<char* (*)(char*, const char*)>(strpbrk), s1, s2,
+        EqualityMode::kBufferRelativeEquality);
 }
 
 TEST(strpbrk, Basic) {

@@ -14,7 +14,8 @@ void CompareStrncpyEval(const char* s1,
     auto true_fn = std::bind(strncpy, _1, _2, n);
     auto test_fn = std::bind(_strncpy, _1, _2, n);
     SCOPED_TRACE(comment);
-    CompareBufferFunctions<char, char, const char>(test_fn, true_fn, s1, s2);
+    CompareBufferFunctions<char*, char*, const char*>(test_fn, true_fn, s1, s2,
+                                                      EqualityMode::kBufferRelativeEquality);
 }
 
 TEST(strncpy, Basic) {

@@ -14,8 +14,9 @@ void CompareMemcpyEval(const char* s1, const char* s2, size_t len, const char* c
     auto true_fn = std::bind(memcpy, _1, _2, len);
     auto test_fn = std::bind(_memcpy, _1, _2, len);
     SCOPED_TRACE(comment);
-    CompareBufferFunctions<void, void, const void>(
-        test_fn, true_fn, s1, s2, len, len);
+    CompareBufferFunctions<void*, void*, const void*>(
+        test_fn, true_fn, s1, s2, len, len,
+        EqualityMode::kBufferRelativeEquality);
 }
 
 TEST(memcpy, Basic) {

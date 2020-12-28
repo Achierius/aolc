@@ -15,8 +15,8 @@ void CompareMemmoveEval(const char* s1, const char* s2,
     auto true_fn = std::bind(memmove, _1, _2, len);
     auto test_fn = std::bind(_memmove, _1, _2, len);
     SCOPED_TRACE(comment);
-    CompareBufferFunctions<void, void, const void>(
-        test_fn, true_fn, s1, s2, len, len);
+    CompareBufferFunctions<void*, void*, const void*>(
+        test_fn, true_fn, s1, s2, len, len, EqualityMode::kBufferRelativeEquality);
 }
 
 TEST(memmove, Basic) {

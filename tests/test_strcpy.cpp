@@ -9,7 +9,8 @@
 
 void CompareStrcpyEval(const char* s1, const char* s2, const char* comment) {
     SCOPED_TRACE(comment);
-    CompareBufferFunctions<char, char, const char>(_strcpy, strcpy, s1, s2);
+    CompareBufferFunctions<char*, char*, const char*>(_strcpy, strcpy, s1, s2,
+                                                      EqualityMode::kBufferRelativeEquality);
 }
 
 TEST(strcpy, Basic)

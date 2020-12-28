@@ -11,7 +11,8 @@ void CompareMemsetEval(const void* dst, const int c, const size_t n, const char*
     auto true_fn = std::bind(memset, _1, c, n);
     auto test_fn = std::bind(_memset, _1, c, n);
     SCOPED_TRACE(comment);
-    CompareBufferFunctions<void, void>(test_fn, true_fn, dst, n);
+    CompareBufferFunctions<void*, void*>(test_fn, true_fn, dst, n,
+                                         EqualityMode::kBufferRelativeEquality);
 };
 
 TEST(memset, Basic) {

@@ -11,7 +11,8 @@ void CompareStrstrEval(const char* s1, const char* s2, const char* comment) {
     auto true_fn = std::bind(static_cast<char* (*)(char*, const char*)>(strstr), _1, _2);
     auto test_fn = std::bind(_strstr, _1, _2);
     SCOPED_TRACE(comment);
-    CompareBufferFunctions<char, char, const char>(test_fn, true_fn, s1, s2);
+    CompareBufferFunctions<char*, char*, const char*>(test_fn, true_fn, s1, s2,
+                                                   EqualityMode::kBufferRelativeEquality);
 }
 
 TEST(strstr, Basic) {
