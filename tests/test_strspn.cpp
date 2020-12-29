@@ -6,7 +6,8 @@
 
 void CompareBufferFuncEvalStrspn(const char* s1, const char* s2, const char* comment) {
     SCOPED_TRACE(comment);
-    CompareBufferFunctions<size_t, const char*, const char*>(_strspn, strspn, s1, s2, EqualityMode::kStrictEquality);
+    CompareBufferFunctions<size_t, const char*, const char*>(
+            _strspn, strspn, s1, s2, EqualityMode::kStrictEquality);
 }
 
 TEST(strspn, Basic) {

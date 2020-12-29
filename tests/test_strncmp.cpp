@@ -15,7 +15,7 @@ void CompareStrncmpEval(const char* s1, const char* s2,
         
     SCOPED_TRACE(comment);
     CompareBufferFunctions<int, const char*, const char*>(
-        test_wrapper, true_wrapper, s1, s2, EqualityMode::kSignEquality);
+           test_wrapper, true_wrapper, s1, s2, EqualityMode::kSignEquality);
 }
 
 TEST(strncmp, Basic) {
