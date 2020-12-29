@@ -19,7 +19,7 @@ void CompareMemchrEval(const void* buff, int c, size_t num,
     SCOPED_TRACE(comment);
     CompareBufferFunctions<const void*, const void*>(
             test_wrapper, true_wrapper, buff, num,
-            EqualityMode::kBufferRelativeEquality);
+            EqualityMode::kSignEquality);
 }
 
 TEST(memchr, Basic) {
