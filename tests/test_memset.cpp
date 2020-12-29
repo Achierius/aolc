@@ -4,17 +4,21 @@
 #include "aolc/compare_buffer_functions.h"
 #include "gtest/gtest.h"
 
-TEST(memset, Basic)
-{
-        char s_test[] = {"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\0"};
-        char s_true[] = {"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\0"};
-        
-        memset(s_true + 3, 'A', 3);
-        memset(s_true + 10, 'x', 7);
-        memset(s_true + 20, '\0', 1);
+void CompareMemsetEval(const void* dst, const int c, const size_t n, const char* comment) {
+    using std::placeholders::_1;
+    using std::placeholders::_2;
 
-        _memset(s_test + 3, 'A', 3);
-        _memset(s_test + 10, 'x', 7);
-        _memset(s_test + 20, '\0', 1);
-        EXPECT_STREQ(s_true, s_test);
+    auto true_fn = std::bind(memset, _1, c, n);
+    auto test_fn = std::bind(_memset, _1, c, n);
+    SCOPED_TRACE(comment);
+    CompareBufferFunctions<void*, void*>(test_fn, true_fn, dst, n,
+                                         EqualityMode::kBufferRelativeEquality);
+};
+
+TEST(memset, Basic) {
+    char s_true[] = {"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"};
+    
+    CompareMemsetEval(s_true + 3, ' ', 10, "s_true + 3, ' ', 10");
+    CompareMemsetEval(s_true + 0, 'X', 20, "s_true + 0, 'X', 20");
+    CompareMemsetEval(s_true + 13, '\0', 1, "s_true + 13, '\0', 1");
 }
