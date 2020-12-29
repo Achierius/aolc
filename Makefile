@@ -28,12 +28,13 @@ TESTS_DIR = tests
 BENCH_DIR = benchmarks
 SUBMODULE_DIR = external
 
-C_STUB_FILE = string_stubs.c
 LIBNAME = aolc
 
-TEST_NAMES = test_linkages test_strlen test_strcpy test_strncpy test_memcpy test_memset \
-						 test_memmove test_strstr test_errno test_strpbrk test_strspn test_strcspn \
-						 test_strcmp test_strncmp
+STRINGH_FNS  = memcpy memmove memchr memcmp memset strcat strncat strchr \
+               strrchr strcmp strncmp strcoll strcpy strncpy strerror strlen \
+							 strspn strcspn strpbrk strstr strtok strxfrm \
+
+TEST_NAMES = test_linkages $(addprefix test_,$(STRINGH_FNS))
 TESTS = $(addprefix $(TESTS_DIR)/,$(addsuffix .cpp,$(TEST_NAMES)))
 TESTS_O = $(addprefix $(TESTS_DIR)/,$(addsuffix .cpp,$(TEST_NAMES)))
 TEST_LIBNAMES = test_$(LIBNAME).a# sys_libc.a
@@ -43,10 +44,6 @@ GTEST_DIR = $(SUBMODULE_DIR)/googletest
 GTEST_INCLUDE_DIR = $(GTEST_DIR)/googletest/include
 GTEST_LIBS = $(GTEST_DIR)/lib/libgtest_main.a $(GTEST_DIR)/lib/libgtest.a
 
-STRINGH_FNS  = memcpy memmove memchr memcmp memset strcat strncat strchr \
-               strrchr strcmp strncmp strcoll strcpy strncpy strerror strlen \
-							 strspn strcspn strpbrk strstr strtok strxfrm \
-							 hello_world \
 
 IMPLEMENTED_STRINGH_FNS = memcpy memset \
 	      									strcpy strncpy strlen
@@ -130,7 +127,6 @@ clean-all: clean
 	rmdir $(BUILD_DIR)
 	rmdir $(LIBS_DIR)
 	(cd $(SUBMODULE_DIR) && make clean)
-
 
 
 libs: $(TEST_LIBS) $(LIBS_DIR)/$(LIBNAME).a
