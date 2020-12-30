@@ -13,6 +13,12 @@ SECTION .text
 
 _strpbrk:
 strpbrk:
+  mov edx, [esi] ; Load first few tokens into register for quick access
+  cmp  dl, 0
+  jz  .return_fail
+  and edx, 0x00FFFFFF ; Clip off the last byte, since we can't easily access it
+  add esi,  2      ; Number of permanently-stored token values
+
   add edi, -1      ; We subtract  
   add esi, -1
   mov eax, edi
@@ -29,17 +35,22 @@ strpbrk:
 
 .loop_str1:
   add eax, 1       ; advance target string ptr
-  mov cl, [eax]    ; store character we want to check against tokens
-  cmp cl, 0
+  mov ecx, [eax]    ; store character we want to check against tokens
+  cmp  cl, 0
   jz  .return_fail ; end of target string => return NULL
   mov esi, edi     ; re-load pre-addr of token-string
 
+  cmp  dl,  cl
+  je  .return_succ
+  cmp  dh,  cl
+  je  .return_succ
+
 .loop_str2:        ; Loop over each token and see if it matches curr char 
   add esi, 1       ; advance token to search for
-  mov dl, [esi]    ; load token into register for speed of access
-  cmp dl, 0
+  mov  ch, [esi]    ; load token into register for speed of access
+  cmp  ch, 0
   jz  .loop_str1   ; end of token str => move on to next outer loop
-  cmp dl, cl       ; compare character in string to current token
+  cmp  ch,  cl       ; compare character in string to current token
   jne .loop_str2   ; continue looping tokens
 
 .return_succ:
