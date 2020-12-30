@@ -61,8 +61,8 @@ project as a submodule - currently, google/googletest and google/benchmark.
 | `<string.h>`  | strlen       |       ✔        |      Core      | Marcus Plutowski <achierius@gmail.com> |
 | `<string.h>`  | strspn       |      TODO      |      Core      ||
 | `<string.h>`  | strcspn      |      TODO      |      Core      ||
-| `<string.h>`  | strpbrk      |      TODO      |      Core      | Marcus Plutowski <achierius@gmail.com> |
-| `<string.h>`  | strstr       |       ✔        |      Core      | Marcus Plutowski <achierius@gmail.com> |
+| `<string.h>`  | strpbrk      |       ✔        |      Core      | Marcus Plutowski <achierius@gmail.com> |
+| `<string.h>`  | strstr       |      TODO      |      Core      | Marcus Plutowski <achierius@gmail.com> |
 | `<string.h>`  | strtok       |      TODO      |      Core      ||
 | `<string.h>`  | strxfrm      |      TODO      |      Core      ||
 | GNU           | mempcpy      |      TBD       |      Core      ||
