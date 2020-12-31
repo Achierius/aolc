@@ -168,12 +168,10 @@ void CompareBufferFuncEval(std::function<RetT (void*, const void*)> test_func,
          * errors out (by returning nullptr) we don't compare the actual return
          * values of each function, but rather the offset of their return values
          * from their *dst argument. */
-        if (true_retval == static_cast<RetT>(0) || test_retval == static_cast<RetT>(0)) {
+        if (true_retval == static_cast<RetT>(0)) {
             EXPECT_EQ(test_retval, static_cast<RetT>(0));
-            EXPECT_EQ(test_retval, true_retval);
-        } else {
-            EXPECT_EQ((intptr_t) true_retval - (intptr_t) true_s1, (intptr_t) test_retval - (intptr_t) test_s1);
         }
+        EXPECT_EQ((intptr_t) true_retval - (intptr_t) true_s1, (intptr_t) test_retval - (intptr_t) test_s1);
         break;
       case EqualityMode::kSignEquality:
         /* These functions (strcmp, memcmp) return an integer value, in which
