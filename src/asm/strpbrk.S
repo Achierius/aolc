@@ -22,8 +22,8 @@ strpbrk:
 
 .makemagic:           ; make magic numbers which allow fast token checking
   ;xor rcx, rcx        ; cl = 'u'; will hold (!tok1 | !tok2 | ... | !tokN)
-  mov rcx, -1         ; dl = 'v'; will hold (!tok1 & !tok2 & ... & !tokN)
-  mov rdx, -1         ; dl = 'v'; will hold (!tok1 & !tok2 & ... & !tokN)
+  mov rcx, 0x0FF         ; dl = 'v'; will hold (!tok1 & !tok2 & ... & !tokN)
+  mov rdx, 0x0FF         ; dl = 'v'; will hold (!tok1 & !tok2 & ... & !tokN)
   add rsi, -1
 .loop_makemagic:
   add rsi, 1          ; Advance token pointer
