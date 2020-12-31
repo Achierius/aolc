@@ -13,49 +13,55 @@ SECTION .text
 
 _strpbrk:
 strpbrk:
-  mov edx, [esi] ; Load first few tokens into register for quick access
-  cmp  dl, 0
-  jz  .return_fail
-  and edx, 0x00FFFFFF ; Clip off the last byte, since we can't easily access it
-  add esi,  2      ; Number of permanently-stored token values
-
-  add edi, -1      ; We subtract  
-  add esi, -1
-  mov eax, edi
-  mov edi, esi
-  ; TODO -- for long strings it's probably worth doing some fancy
-  ; leetcode work -- tbd if that's actually possible though
-
-  ; Register Contents:
-  ;  - EDI: Stored ptr. to (1 before) token string
-  ;  - ESI: Ptr. to somewhere inside the token string
-  ;  - EAX: Ptr. to somewhere within the target string
-  ;  - CL:  Container for target-string byte currently under consideration
-  ;  - DL:  Container for current token
-
-.loop_str1:
-  add eax, 1       ; advance target string ptr
-  mov ecx, [eax]    ; store character we want to check against tokens
+  mov rcx, [rsi]      ; Load first few tokens into register for quick access
   cmp  cl, 0
+  jz  .return_fail
+  ;cmp  ch, 0          ; If only 1 token, bool logic not worth it;
+  ;jmp .monotoken_loop ;  => goto special optimization loop
+
+
+.makemagic:           ; make magic numbers which allow fast token checking
+  ;xor rcx, rcx        ; cl = 'u'; will hold (!tok1 | !tok2 | ... | !tokN)
+  mov rcx, -1         ; dl = 'v'; will hold (!tok1 & !tok2 & ... & !tokN)
+  mov rdx, -1         ; dl = 'v'; will hold (!tok1 & !tok2 & ... & !tokN)
+  add rsi, -1
+.loop_makemagic:
+  add rsi, 1          ; Advance token pointer
+  mov  al, [rsi]      ; Load next token into scratch register
+  cmp  al, 0          ; Check for null terminator;
+  jz  .normal_loop    ;  if present, => end of token str; goto main body of code
+  and  cl, al         ; u = u && token
+  not  al
+  and  dl, al         ; v = v && ~token
+  jmp .loop_makemagic
+
+
+.normal_loop:
+  ; Register Contents:
+  ;  - RDI: Ptr. to target string
+  ;  - AL:  Scratch storage for target-string bytes
+  ;  - R8B: Intermediate computation values
+  ;  - CL:  'u' magic number
+  ;  - DL:  'd' magic number
+  add rdi, -1
+.loop_str1:
+  add rdi, 1       ; advance target string ptr
+  mov  al, [rdi]   ; store character we want to check against tokens
+  cmp  al, 0
   jz  .return_fail ; end of target string => return NULL
-  mov esi, edi     ; re-load pre-addr of token-string
+  mov r8b,  al
+  and r8b,  dl
+  not  al
+  and  al,  cl
+  or   al, r8b
+  jnz .loop_str1
 
-  cmp  dl,  cl
-  je  .return_succ
-  cmp  dh,  cl
-  je  .return_succ
 
-.loop_str2:        ; Loop over each token and see if it matches curr char 
-  add esi, 1       ; advance token to search for
-  mov  ch, [esi]    ; load token into register for speed of access
-  cmp  ch, 0
-  jz  .loop_str1   ; end of token str => move on to next outer loop
-  cmp  ch,  cl       ; compare character in string to current token
-  jne .loop_str2   ; continue looping tokens
-
-.return_succ:
+.return_succ:      ; If success, return current position of string ptr
+  mov rax, rdi
   ret
 
-.return_fail:      ; Jumping directly to this returns \0
-  xor eax, eax     ; zero out return register
+
+.return_fail:      ; If fail, return NULL
+  xor rax, rax     ; zero out return register
   ret
