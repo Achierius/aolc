@@ -5,6 +5,7 @@
 #include "gtest/gtest.h"
 
 #include <iostream>
+#include <cstdio>
 
 void CompareStrpbrkEval(const char* s1,
                         const char* s2,
@@ -70,10 +71,26 @@ TEST(strpbrk, Basic) {
     CompareStrpbrkEval(str, xX, "str, xX");
     CompareStrpbrkEval(str, X, "str, X");
     CompareStrpbrkEval(str, y, "str, y");
+}
+
+TEST(strpbrk, RepeatedTokens) {
+    char str[] = {'x', 'x', 'x', 'X', 'y', 'X', 'X', '\0'};
+    char _y[] = "asdasdasdasdasdasdaasdgqweqweasdqweqqe_y";
+
+    char str_trimmed[] = {'x', 'y', '\0'};
+    char _y_trimmed[] = "y\n\0";
+    CompareStrpbrkEval(str_trimmed, _y_trimmed, "str_trimmed, _y_trimmed");
+    CompareStrpbrkEval(str, _y, "str, _y");
     CompareStrpbrkEval(str, str, "str, str");
     CompareStrpbrkEval(str + 1, str, "str + 1, str");
     CompareStrpbrkEval(_y + 10, _y, "_y, _y");
-    CompareStrpbrkEval(str, _y, "str, _y");
+}
+
+TEST(strpbrk, Try) {
+    const char* buf = "abcdabcdabcdabcd";
+    const char* chr = "b";
+
+    CompareStrpbrkEval(buf, chr, ":(");
 }
 
 TEST(strpbrk, LongPrintable) {
