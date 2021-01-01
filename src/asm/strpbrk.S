@@ -13,52 +13,101 @@ SECTION .text
 
 _strpbrk:
 strpbrk:
-  mov rcx, [rsi]      ; Load first few tokens into register for quick access
-  cmp  cl, 0
-  jz  .return_fail
-  ;cmp  ch, 0          ; If only 1 token, bool logic not worth it;
-  ;jmp .monotoken_loop ;  => goto special optimization loop
-
-
-.makemagic:           ; make magic numbers which allow fast token checking
-  ;xor rcx, rcx        ; cl = 'u'; will hold (!tok1 | !tok2 | ... | !tokN)
-  mov rcx, 0x0FF         ; dl = 'v'; will hold (!tok1 & !tok2 & ... & !tokN)
-  mov rdx, 0x0FF         ; dl = 'v'; will hold (!tok1 & !tok2 & ... & !tokN)
-  add rsi, -1
-.loop_makemagic:
-  add rsi, 1          ; Advance token pointer
-  mov  al, [rsi]      ; Load next token into scratch register
-  cmp  al, 0          ; Check for null terminator;
-  jz  .normal_loop    ;  if present, => end of token str; goto main body of code
-  and  cl, al         ; u = u && token
-  not  al
-  and  dl, al         ; v = v && ~token
-  jmp .loop_makemagic
-
-
-.normal_loop:
-  ; Register Contents:
-  ;  - RDI: Ptr. to target string
-  ;  - AL:  Scratch storage for target-string bytes
-  ;  - R8B: Intermediate computation values
-  ;  - CL:  'u' magic number
-  ;  - DL:  'd' magic number
-  add rdi, -1
-.loop_str1:
-  add rdi, 1       ; advance target string ptr
-  mov  al, [rdi]   ; store character we want to check against tokens
+  mov rax, 0
+  vmovd xmm8, eax
+.load_tokens:
+  mov rax, [rsi] ; Load first few tokens into register for quick access
   cmp  al, 0
-  jz  .return_fail ; end of target string => return NULL
-  mov r8b,  al
-  and r8b,  dl
-  not  al
-  and  al,  cl
-  or   al, r8b
-  jnz .loop_str1
+  jz  .return_fail
+  vmovd xmm9, eax
+  vpbroadcastb xmm0, xmm9
+  jmp .eval_1token
+  ;movzx edx,  al
+  ;movd xmm1, edx
+
+  ;cmp  al, 0
+  ;add ecx, 1
+  ;jz .eval_Ctokens
+  ;movzx edx,  al
+  ;movd xmm2, edx
+
+.eval_1token:
+  vmovdqa      xmm15, [rdi] ; 
+
+  movdqa       xmm14, xmm15
+  pcmpeqb      xmm14, xmm0 ; check for token
+  pmovmskb     edx, xmm14
+  tzcnt        cx, dx
+  cmp cx, 16
+  jne .success_null_check
+  add rdi, 128
+  ;jmp .normal_null_check
+
+.normal_null_check:
+  movdqa       xmm14, xmm15
+  pcmpeqb      xmm14, xmm8
+  pmovmskb     eax, xmm14
+  tzcnt        dx, ax
+  cmp dx, 16
+  jne .return_fail
+  jmp .eval_1token
+
+.success_null_check:
+  movdqa       xmm14, xmm15
+  pcmpeqb      xmm14, xmm8
+  pmovmskb     eax, xmm14
+  tzcnt        dx, ax
+  cmp cx, dx
+  jge .return_fail
+  jmp .return_succ
+  
+.eval_Ctokens:
+  jmp .return_fail
+
+
+;  and edx, 0x00FFFFFF ; Clip off the last byte, since we can't easily access it
+;  add esi,  2      ; Number of permanently-stored token values
+;
+;  add rdi, -1      ; We subtract  
+;  add esi, -1
+;  mov r11, rdi     ; Move string ptr to storage location
+;  mov edi, esi
+;
+;
+;.normal_loop:
+;  ; Register Contents:
+;  ;  - EDI: Stored ptr. to (1 before) 3rd token in token string
+;  ;  - ESI: Ptr. to interior of token string
+;  ;  - R11: Ptr. to interior of target string
+;  ;  - DL:  Container for 1st token
+;  ;  - DH:  Container for 2nd token
+;  ;  - CH:  Container for nth, current, token (n > 2)
+;  ;  - CL:  Container for target-string byte currently under consideration
+;.loop_str1:        ; Outer loop: 
+;  add r11, 1       ; advance target string ptr
+;  mov ecx, [r11]   ; store character we want to check against tokens
+;  cmp  cl, 0
+;  jz  .return_fail ; end of target string => return NULL
+;  mov esi, edi     ; re-load pre-addr of token-string
+;
+;  cmp  dl,  cl
+;  je  .return_succ
+;  cmp  dh,  cl
+;  je  .return_succ
+;
+;.loop_str2:        ; Inner loop: loop over each token and see if it matches curr char 
+;  add esi, 1
+;  mov  ch, [esi]   ; Load next token into scratch register
+;  cmp  ch, 0       ; Check for null terminator;
+;  jz  .loop_str1   ;  if so, => end of token str; goto next outer loop
+;  cmp  ch,  cl     ; Check if current char matches
+;  jne .loop_str2   ;  if !match, goto next inner loop (continue looping tokens)
+;                   ;  if match, fall down to .return_succ
 
 
 .return_succ:      ; If success, return current position of string ptr
-  mov rax, rdi
+  mov          rax, rdi
+  add           al,  cl
   ret
 
 .return_fail:      ; If fail, return NULL
