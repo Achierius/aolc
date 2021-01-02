@@ -9,6 +9,7 @@
 #include <string>
 #include <random>
 #include <array>
+#include <functional>
 
 static void BM_Strlen_NBytes(benchmark::State& state, size_t len, size_t off) {
     size_t buffer_len = len + off;
@@ -20,12 +21,13 @@ static void BM_Strlen_NBytes(benchmark::State& state, size_t len, size_t off) {
     // implementations which rely on a faster-but-leakier bit hack procedure)
     char* buffer = new char[buffer_len];
     std::random_device rd;
+    std::mt19937 gen(std::hash<size_t>{}(len));
     //  If we want to only scan printable strings:
     ////std::uniform_int_distribution<char> char_dist(' ', '~'); 
     std::uniform_int_distribution<char> char_dist(1, 127); 
     #pragma omp parallel for
     for (size_t i = buffer_off; i < buffer_len - 1; i++) {
-        buffer[i] = char_dist(rd);
+        buffer[i] = char_dist(gen);
     }
     buffer[buffer_len - 1] = '\0';
 
@@ -49,9 +51,20 @@ static void BM_Strlen_NBytes(benchmark::State& state, size_t len, size_t off) {
 
 int main(int argc, char** argv) {
     std::string str_base = "Strlen-Len";
-    std::array<int, 13> test_lengths = {4, 8, 16, 32, 64, 256, 4096, 16384, 1, 10, 100, 1000, 10000};
+    std::array test_lengths = {4, 8, 16, 32, 64, 256, 1024, 4096, 16384};//, 1, 10, 100, 1000, 10000};
     for (auto len : test_lengths) {
-        benchmark::RegisterBenchmark((str_base + std::to_string(len)).c_str(), BM_Strlen_NBytes, len, 0);
+        benchmark::RegisterBenchmark((str_base + std::to_string(len)).c_str(), BM_Strlen_NBytes,
+                                     len, 0);
+    }
+
+    std::array misalignment_factors = {1, 7, 8, 15}; // bshrug
+    std::array misaligned_test_lengths = {8, 32, 256, 4096, 16384};
+    for (auto off : misalignment_factors) {
+        str_base = "Strlen-Off" + std::to_string(off) + "-Len";
+        for (auto len : misaligned_test_lengths) {
+            benchmark::RegisterBenchmark((str_base + std::to_string(len)).c_str(), BM_Strlen_NBytes,
+                                         len, off);
+        }
     }
     benchmark::Initialize(&argc, argv);
     benchmark::RunSpecifiedBenchmarks();
