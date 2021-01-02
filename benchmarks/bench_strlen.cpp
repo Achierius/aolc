@@ -9,6 +9,7 @@
 #include <string>
 #include <random>
 #include <array>
+#include <functional>
 
 static void BM_Strlen_NBytes(benchmark::State& state, size_t len, size_t off) {
     size_t buffer_len = len + off;
@@ -20,12 +21,13 @@ static void BM_Strlen_NBytes(benchmark::State& state, size_t len, size_t off) {
     // implementations which rely on a faster-but-leakier bit hack procedure)
     char* buffer = new char[buffer_len];
     std::random_device rd;
+    std::mt19937 gen(std::hash<size_t>{}(len));
     //  If we want to only scan printable strings:
     ////std::uniform_int_distribution<char> char_dist(' ', '~'); 
     std::uniform_int_distribution<char> char_dist(1, 127); 
     #pragma omp parallel for
     for (size_t i = buffer_off; i < buffer_len - 1; i++) {
-        buffer[i] = char_dist(rd);
+        buffer[i] = char_dist(gen);
     }
     buffer[buffer_len - 1] = '\0';
 
