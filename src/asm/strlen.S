@@ -2,16 +2,16 @@ SECTION .DATA
   lomagic DB 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01
   himagic DB 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80
 
+ALIGN 16
 SECTION .TEXT
 %ifdef OVERRIDE_LIBC_NAMES 
 	GLOBAL strlen
 %endif
 	GLOBAL _strlen
 
-; TODO try out SSE instructions on this sometime
 _strlen:
 strlen:
-  cmp          rdi,  0     ; Check for null pointer
+  cmp          rdi,  0
   jz           done
   mov          rsi, rdi
   mov           cl, dil
@@ -19,9 +19,6 @@ strlen:
   jz           sse_scan
   cmp           cl, 0x08
   jge           byte_scan_upper
-
-  ;cmp          ecx, 1000B
-  ;jge          byte_scan_upper
 
 byte_scan_lower:
   mov          rdx, [rdi]
@@ -39,8 +36,6 @@ byte_scan_lower:
   cmp          dl,  0
   jz           done
   add          rdi, 1
-  cmp          dil, 0
-  jz           sse_scan
 .byte3:
   shr          rdx, 8
   cmp          dl,  0
@@ -129,28 +124,32 @@ byte_scan_upper:
   cmp          dl,  0
   jz           done
   add          rdi, 1
-  mov          cl, dil
-  and          cl, 0x0F
-  jz           sse_scan
+  ;mov          cl, dil
+  ;and          cl, 0x0F
+  ;jz           sse_scan
 
 sse_scan:
-  xor          r10,  r10
-  vmovd        xmm0, r10d  ; Create 128-byte 0 register for null-byte checking later on
   xor          rcx,  rcx
+  xorps        xmm0, xmm0
+  jmp .loop_body
   ; Register Uses:
   ;  - RDI:  (Pre-) Pointer to string to search in
   ;  - XMM0: 16-null-byte-mask (aka all zeroes)
   ;  - XMM1: 128-byte chunk of string, results of pcmpeqb
   ;  - RDX:  Generated comparison-to-null-byte bitmask
   ;  - RCX:  Intermediate values
+ALIGN 16
 .loop:
-  vmovdqa      xmm1, [rdi] ; Load 16 bytes of string into register
-  pcmpeqb      xmm1, xmm0  ; Compare each byte against '\0'
-  pmovmskb     edx,  xmm1  ; Pull the leading bit from each byte and put it in %dx (yes, %dx);
-  tzcnt        cx,   dx    ;  then count the number of trailing zeros. If any are 1, we hit a \n.
-  add          rdi,  rcx   ; Add the number of trailing non-null bytes to our retval accumulator
-  cmp          cx,   16    ; If all 16 bits are 0, we haven't hit one yet --
-  je           .loop       ;  continue looping.
+  add          rdi,  16     ; Advance string pointer -- skipped on first pass
+.loop_body:
+  movdqa       xmm1, [rdi]  ; Load 16 bytes of string into register
+  pcmpeqb      xmm1, xmm0   ; Compare each byte against '\0'
+  pmovmskb     edx,  xmm1   ; Pull the leading bit from each byte in xmm1 -- 1 indicates a '\0' match
+  cmp          edx,  0      ; If the whole register is 0, then we ran into no null terminators --
+  jz           .loop;  continue looping.
+  bsf          cx,   dx     ; Otherwise, count how many leading non-null bytes we had,
+  add          rdi,  rcx    ;  add then to our count,
+ ;jmp          .done        ;  and fall through to return.
 
 done:
   mov          rax, rdi
