@@ -22,122 +22,52 @@ SECTION .TEXT
 _strlen:
 strlen:
   mov          rsi, rdi
-  mov          rcx, rdi
-  and           cl, 0x0F
+  test         dil, 0x0F
   jz           sse_scan
+
+byte_scan:
   cmp           cl, 0x08
-  jge           byte_scan_upper
-
-byte_scan_lower:
+  jge           .upper
+.lower:
   mov          rdx, [rdi]
-.byte0:
-  cmp          dl,  0
-  jz           done
-  add          rdi, 1
-.byte1:
-  shr          rdx, 8
-  cmp          dl,  0
-  jz           done
-  add          rdi, 1
-.byte2:
-  shr          rdx, 8
-  cmp          dl,  0
-  jz           done
-  add          rdi, 1
-.byte3:
-  shr          rdx, 8
-  cmp          dl,  0
-  jz           done
-  add          rdi, 1
-.byte4:
-  shr          rdx, 8
-  cmp          dl,  0
-  jz           done
-  add          rdi, 1
-.byte5:
-  shr          rdx, 8
-  cmp          dl,  0
-  jz           done
-  add          rdi, 1
-.byte6:
-  shr          rdx, 8
-  cmp          dl,  0
-  jz           done
-  add          rdi, 1
-.byte7:
-  shr          rdx, 8
-  cmp          dl,  0
-  jz           done
-  add          rdi, 1
+  mov          rcx,  rdx
+  
+  ; eqn:
+  ; (((v) - 0x01010101UL) & ~(v) & 0x80808080UL)
+  ; rcx will contain the ((v) - 0x01010101UL); rdx the ~(v) & (0x80808080UL).
+  not          rdx
+  and          rdx, [himagic]
+  sub          rcx, [lomagic]
+  and          rdx, rcx
+  jnz          .null_byte
+  add          rdi, 8
+ ;jmp          .upper        ; Fall through
 
-byte_scan_upper:
+.upper:
   mov          rdx, [rdi]
-.byte0:
-  cmp          dl,  0
-  jz           done
-  add          rdi, 1
-  mov          cl, dil
-  and          cl, 0x0F
-  jz           sse_scan
-.byte1:
-  shr          rdx, 8
-  cmp          dl,  0
-  jz           done
-  add          rdi, 1
-  mov          cl, dil
-  and          cl, 0x0F
-  jz           sse_scan
-.byte2:
-  shr          rdx, 8
-  cmp          dl,  0
-  jz           done
-  add          rdi, 1
-  mov          cl, dil
-  and          cl, 0x0F
-  jz           sse_scan
-.byte3:
-  shr          rdx, 8
-  cmp          dl,  0
-  jz           done
-  add          rdi, 1
-  mov          cl, dil
-  and          cl, 0x0F
-  jz           sse_scan
-.byte4:
-  shr          rdx, 8
-  cmp          dl,  0
-  jz           done
-  add          rdi, 1
-  mov          cl, dil
-  and          cl, 0x0F
-  jz           sse_scan
-.byte5:
-  shr          rdx, 8
-  cmp          dl,  0
-  jz           done
-  add          rdi, 1
-  mov          cl, dil
-  and          cl, 0x0F
-  jz           sse_scan
-.byte6:
-  shr          rdx, 8
-  cmp          dl,  0
-  jz           done
-  add          rdi, 1
-  mov          cl, dil
-  and          cl, 0x0F
-  jz           sse_scan
-.byte7:
-  shr          rdx, 8
-  cmp          dl,  0
-  jz           done
-  add          rdi, 1
-  ;mov          cl, dil
-  ;and          cl, 0x0F
-  ;jz           sse_scan
+  mov          rcx,  rdx
+  
+  ; eqn:
+  ; (((v) - 0x01010101UL) & ~(v) & 0x80808080UL)
+  ; rcx will contain the ((v) - 0x01010101UL); rdx the ~(v) & (0x80808080UL).
+  not          rdx
+  and          rdx, [himagic]
+  sub          rcx, [lomagic]
+  and          rdx, rcx
+  jnz          .null_byte
+  add          rdi, 8
+  and          dil, 0xF0
+  jmp sse_scan
 
+ALIGN 16
+.null_byte:
+  bsf          rcx,  rdx     ; Otherwise, count how many leading non-null bytes we had,
+  shr          rcx,  3
+  add          rdi,  rcx     ;  add then to our count,
+  jmp          done          ;  and fall through to return.
 
 ; Uses SSE instructions to read 16 bytes at a time
+ALIGN 16
 sse_scan:
   bt           rdi, 4
   jnc          avx2_scan
@@ -199,23 +129,6 @@ done:
 
 
 
-
-
-
-
-
-
-DEBUG:
-  ;mov rax, rdx
- ; mov rax, rsi
-  vzeroall
-  mov rax, rdi
-  sub rax, rsi
-
-  ;and rax, 0x0F
-  ret
-
-
 PRINTDIE0:
   mov edx, 1
   mov ecx, n1str
@@ -248,7 +161,6 @@ PRINTDIE:
   mov ebx,1          ;file descriptor (stdout)
   mov eax,4          ;system call number (sys_write)
   int 0x80           ;call kernel
-
 .print_dil:
   xor r12, r12
   mov r12w, 8
@@ -265,7 +177,6 @@ PRINTDIE:
   mov eax, 4
   int 0x80
   jmp .loop
-  
 .print_1:
   mov edx, 1
   mov ecx, n1str
@@ -273,7 +184,6 @@ PRINTDIE:
   mov eax, 4
   int 0x80
   jmp .loop
-
 .done:
   mov edx, endllen ;message length
   mov ecx, endlstr   ;message to write
@@ -283,20 +193,6 @@ PRINTDIE:
 
   mov eax, 1
   int 0x80
-
-
-
-RETRDI:
-  mov rax, rdi
-  ret
-
-
-
-RETR8B:
-  xor rax, rax
-  mov  al, r8b
-  ret
-
 
 
 DIE:
