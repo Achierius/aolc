@@ -1,3 +1,5 @@
+%use smartalign
+
 SECTION .DATA
   lomagic DB 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01
   himagic DB 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80
@@ -135,24 +137,13 @@ byte_scan_upper:
   ;jz           sse_scan
 
 
+; Uses SSE instructions to read 16 bytes at a time
 sse_scan:
-  ; BEGIN DEBUG SECTION
-  ;mov r8, rdi
-  ;and r8b, 00001111B
-  ;cmp r8b, 0
-  ;jnz DIE
-  ; END   DEBUG SECTION
-
   bt           rdi, 4
   jnc          avx2_scan
   xor          rcx,  rcx
   xorps        xmm0, xmm0
-  jmp .loop_body
-
-.null_byte:
-  bsf          cx,   dx     ; Otherwise, count how many leading non-null bytes we had,
-  add          rdi,  rcx    ;  add then to our count,
-  jmp          done         ;  and return.
+ ;jmp .loop_body
 
   ; Register Uses:
   ;  - RDI:  (Pre-) Pointer to string to search in
@@ -160,7 +151,6 @@ sse_scan:
   ;  - XMM1: 128-byte chunk of string, results of pcmpeqb
   ;  - RDX:  Generated comparison-to-null-byte bitmask
   ;  - RCX:  Intermediate values
-ALIGN 16
 .loop_body:
   movdqa       xmm1, [rdi]  ; Load 16 bytes of string into register
   pcmpeqb      xmm1, xmm0   ; Compare each byte against '\0'
@@ -168,24 +158,22 @@ ALIGN 16
   cmp          edx,  0      ; If the whole register is 0, then we ran into no null terminators --
   jnz          .null_byte   ;  if it's not, then goto handler
   add          rdi,  16     ; If so though, then just add 16 and move on to AVX
- ;jmp          .avx2_scan
+  jmp          avx2_scan
+
+.null_byte:
+  bsf          cx,   dx     ; Otherwise, count how many leading non-null bytes we had,
+  add          rdi,  rcx    ;  add then to our count,
+  jmp          done         ;  and return.
   
 
+ALIGN 64
 avx2_scan:
-  ; BEGIN DEBUG SECTION
-  mov r8, rdi
-  and r8b, 00011111B
-  cmp r8b, 0
-  jnz PRINTDIE1
-  ; END   DEBUG SECTION
-
-  xor          rcx,  rcx
   vxorps       ymm0, ymm0
   jmp .loop_body
   ; Register Uses:
   ;  - RDI:  (Pre-) Pointer to string to search in
-  ;  - XMM0: 16-null-byte-mask (aka all zeroes)
-  ;  - XMM1: 128-byte chunk of string, results of pcmpeqb
+  ;  - YMM0: 32-null-byte-mask (aka all zeroes)
+  ;  - YMM1: 256-byte chunk of string, results of pcmpeqb
   ;  - RDX:  Generated comparison-to-null-byte bitmask
   ;  - RCX:  Intermediate values
 ALIGN 16
