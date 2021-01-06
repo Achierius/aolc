@@ -28,41 +28,43 @@ SECTION .TEXT
 _strlen:
 strlen:
   mov          rsi, rdi
-  test         dil, 0x0F
-  jz           sse_scan
+  test         dil, 0x0F     ; Check for alignment on a 16-byte boundary
+  jz           sse_scan      ;  skip alignment if so, go straight to vector-ops
 
   ; Uses standard bit hacks to read 8 bytes at a time
   ; (((v) - 0x01010101UL) & ~(v) & 0x80808080UL)
   ; rcx will contain the ((v) - 0x01010101UL); rdx the ~(v) & (0x80808080UL).
 byte_scan:
-  cmp          dil, 0x08
-  jge          .upper
-.lower:                      ; If we are 8 or more bytes away from 0 (mod 16), read & advance by 8 bytes
+  test         dil, 0x07     ; Check for 8-byte alignment
+  jz           .upper
+.lower:                      ; Align onto an 8-byte boundary
   mov          rdx, [rdi]    ; Loads the target string
   mov          rcx,  rdx
   ; Begin bit hack math
   not          rdx
   and          rdx, [himagic]
-  sub          rcx, [lomagic]
-  and          rdx, rcx      ; The result will have a 1 in the MSB of each byte that was '\0' in the original string
-  ; End bit hack math
+  sub          rcx, [lomagic]; The result will have a 1 in the MSB of each byte that was '\0' in the original string
+  and          rdx, rcx      ; 
+  ; End bit hack math        ;
   jnz          .null_byte    ; Goto null byte handler if no such 1s are present (qword is all 0);
-  add          rdi, 8        ;  otherwise advance pointer by 8,
+                             ; Otherwise, note that we still read a full 8 bytes, even if we were <8 from the 16B boundary --
+  add          rdi, 8        ;  as such, after we (here) advance the source-string pointer by 8,
+  and          dil, 11111000B;  discard any bytes beyond the boundary; yes is a waste, but a small one 
  ;jmp          .upper        ;  and fall through to the upper-qword handler.
 
-.upper:                      ; If we are <8 bytes away from 0 (mod 16), go here -- see above comments for details
+
+.upper:                      ; Align onto a 16-byte boundary -- see above comments for details
   mov          rdx, [rdi]
   mov          rcx,  rdx
   ; Begin bit hack math
   not          rdx
   and          rdx, [himagic]
   sub          rcx, [lomagic]
-  and          rdx, rcx      ; Note that we still read a full 8 bytes, even if we're <8 from the 16B boundary --
-  ; End bit hack math        ;
-  jnz          .null_byte    ;
-  add          rdi, 8        ;  as such, after we (here) advance the source-string pointer by 8,
-  and          dil, 0xF0     ;  discard any bytes beyond the boundary; yes is a waste, but a smalle one 
-  jmp sse_scan
+  and          rdx, rcx
+  ; End bit hack math
+  jnz          .null_byte    ; Goto null byte handler if no such 1s are present (qword is all 0);
+  add          rdi, 8        ;  otherwise advance pointer by 8,
+  jmp sse_scan               ;  and proceed to vector operations.
 
 ALIGN 16
 .null_byte:
