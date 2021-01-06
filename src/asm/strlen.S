@@ -35,6 +35,10 @@ strlen:
   ; (((v) - 0x01010101UL) & ~(v) & 0x80808080UL)
   ; rcx will contain the ((v) - 0x01010101UL); rdx the ~(v) & (0x80808080UL).
 byte_scan:
+  nop
+  nop
+  nop
+  nop
   test         dil, 0x07     ; Check for 8-byte alignment
   jz           .upper
 .lower:                      ; Align onto an 8-byte boundary
@@ -50,8 +54,9 @@ byte_scan:
                              ; Otherwise, note that we still read a full 8 bytes, even if we were <8 from the 16B boundary --
   add          rdi, 8        ;  as such, after we (here) advance the source-string pointer by 8,
   and          dil, 11111000B;  discard any bytes beyond the boundary; yes is a waste, but a small one 
- ;jmp          .upper        ;  and fall through to the upper-qword handler.
-
+  test dil, 0x0F             ; Check if we're now 16-byte aligned
+  jz sse_scan                ;  if so,  goto vector instructions which require it
+ ;jmp          .upper        ;  if not, fall through to the upper-qword handler.
 
 .upper:                      ; Align onto a 16-byte boundary -- see above comments for details
   mov          rdx, [rdi]
