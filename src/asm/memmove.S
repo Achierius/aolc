@@ -1,6 +1,6 @@
-SECTION .DATA
+SECTION .data
 
-SECTION .TEXT
+SECTION .text
 %ifdef OVERRIDE_LIBC_NAMES 
   GLOBAL memmove:
 %endif
