@@ -1,5 +1,4 @@
 #include "string.h"
-
 #ifdef __BENCH_AOLC__
 #include <aolc/_test_string.h>
 #endif
@@ -10,20 +9,24 @@
 #include <random>
 #include <array>
 
+// All tokens WILL be in the string SOMEWHERE (with this impl)
 static void BM_strpbrk(benchmark::State& state, size_t len, size_t n_tokens) {
     char* str_buffer = new char[len + 1];
     char* tok_buffer = new char[n_tokens + 1];
 
-    std::random_device rd;
+    std::mt19937 char_gen(std::hash<size_t>{}(len));
+    std::mt19937 index_gen(std::hash<size_t>{}(len + n_tokens));
+
     std::uniform_int_distribution<char> char_dist(1, 127); 
+    std::uniform_int_distribution<char> index_dist(0, len); 
 
     for (size_t i = 0; i < len; i++) {
-        str_buffer[i] = char_dist(rd);
+        str_buffer[i] = char_dist(char_gen);
     }
     str_buffer[len] = '\0';
 
     for (size_t i = 0; i < n_tokens; i++) {
-        tok_buffer[i] = char_dist(rd);
+        tok_buffer[i] = str_buffer[index_dist(index_gen)];
     }
     tok_buffer[n_tokens] = '\0';
 
