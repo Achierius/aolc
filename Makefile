@@ -71,7 +71,7 @@ check-sanity: GTEST_FILTER = $(subst $(SPACE),:,$(addsuffix .*,$(STRINGH_FNS)))
 check-sanity: $(BIN_DIR)/meta_tests.o FORCE
 	$< --gtest_filter=$(GTEST_FILTER)
 
-check-%: GTEST_FILTER = $*.*
+check-%: GTEST_FILTER = $**
 check-%: $(BIN_DIR)/test_suite.o FORCE
 	$< --gtest_filter=$(GTEST_FILTER)
 
