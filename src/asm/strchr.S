@@ -8,5 +8,21 @@ SECTION .text
 
 _strchr:
 strchr:
-	mov eax, 0
+  mov rdi, rax
+
+loop:
+  cmp qword [rax], 0
+  je eol
+
+  cmp [rax], rsi
+  je strchr_end
+
+  inc rax
+  
+  jmp loop
+
+eol:
+  xor rax, rax
+
+strchr_end:
   ret                   ; Return control
