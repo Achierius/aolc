@@ -1,19 +1,11 @@
 %use smartalign
 
-SECTION .DATA
+SECTION .data
   lomagic DB 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01
   himagic DB 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80
-  leadstr DB 'val: '
-  leadlen EQU $-leadstr
-  endlstr DB 0xa
-  endllen EQU $-endlstr
-  n0str   DB '0'
-  n0len   EQU $-n0str
-  n1str   DB '1'
-  n1len   EQU $-n1str
 
 ALIGN 16
-SECTION .TEXT
+SECTION .text
 %ifdef OVERRIDE_LIBC_NAMES 
 	GLOBAL strlen
 %endiF
@@ -139,80 +131,3 @@ done:
   sub          rax, rsi    ;   minus the stored value of the string base ptr
   vzeroall                 ; Architecture-required or we'll kill succeeding programs
   ret                      ; Return control
-
-
-
-; DEBUG CODE FOLLOWS
-
-PRINTDIE0:
-  mov edx, 1
-  mov ecx, n0str
-  mov ebx, 1
-  mov eax, 4
-  int 0x80
-  mov edx, endllen ;message length
-  mov ecx, endlstr ;message to write
-  mov ebx,1          ;file descriptor (stdout)
-  mov eax,4          ;system call number (sys_write)
-  int 0x80           ;call kernel
-  jmp PRINTDIE
-PRINTDIE1:
-  mov edx, 1
-  mov ecx, n1str
-  mov ebx, 1
-  mov eax, 4
-  int 0x80
-  mov edx, endllen ;message length
-  mov ecx, endlstr ;message to write
-  mov ebx,1          ;file descriptor (stdout)
-  mov eax,4          ;system call number (sys_write)
-  int 0x80           ;call kernel
-  jmp PRINTDIE
-PRINTDIE:
-  mov r11, rdi
-.print_header:
-  mov edx, leadlen ;message length
-  mov ecx, leadstr   ;message to write
-  mov ebx,1          ;file descriptor (stdout)
-  mov eax,4          ;system call number (sys_write)
-  int 0x80           ;call kernel
-.print_dil:
-  xor r12, r12
-  mov r12w, 16
-.loop:
-  cmp r12w, 0
-  jz  .done
-  sub r12w, 1
-  bt  r11w, r12w
-  jc .print_1
-.print_0:
-  mov edx, 1
-  mov ecx, n0str
-  mov ebx, 1
-  mov eax, 4
-  int 0x80
-  jmp .loop
-.print_1:
-  mov edx, 1
-  mov ecx, n1str
-  mov ebx, 1
-  mov eax, 4
-  int 0x80
-  jmp .loop
-.done:
-  mov edx, endllen ;message length
-  mov ecx, endlstr   ;message to write
-  mov ebx,1          ;file descriptor (stdout)
-  mov eax,4          ;system call number (sys_write)
-  int 0x80           ;call kernel
-
-  mov rax, rdi
-  sub rax, rsi
-  vzeroall
-  ret
-  mov eax, 1
-  int 0x80
-
-
-DIE:
-  mov rax, [0]
