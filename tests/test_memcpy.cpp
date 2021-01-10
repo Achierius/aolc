@@ -32,3 +32,23 @@ TEST(memcpy, Basic) {
     CompareMemcpyEval(s3, s1, 2,  "s3, s1, 2");
     CompareMemcpyEval(s1, s2, 4,  "s1, s2, 4");
 }
+
+TEST(memcpy, Length) {
+    int* buff_src = new int[128];
+    int* buff_dst = new int[256];
+
+    for (int i = 0; i < 256; i++) {
+        buff_dst[i] = 256 - i;
+    }
+    for (int i = 0; i < 128; i++) {
+        buff_src[i] = i;
+    }
+    buff_src[20] = '\n'; // Don't get tripped up by null bytes :)
+
+    CompareMemcpyEval((char*) buff_dst, (char*) buff_src, 4*4,   "4");
+    CompareMemcpyEval((char*) buff_dst, (char*) buff_src, 4*8,   "8");
+    CompareMemcpyEval((char*) buff_dst, (char*) buff_src, 4*16,  "16");
+    CompareMemcpyEval((char*) buff_dst, (char*) buff_src, 4*32,  "32");
+    CompareMemcpyEval((char*) buff_dst, (char*) buff_src, 4*64,  "64");
+    CompareMemcpyEval((char*) buff_dst, (char*) buff_src, 4*128, "128");
+}
