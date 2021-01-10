@@ -9,22 +9,22 @@ SECTION .text
 _memcpy:
 memcpy:
 	mov  rax, rdi
-  mov  ecx, edx
-  mov  rdx, rsi
+  add  rdx, rdi
 
-  ; Register Contents:
+  ; Register Uses:
   ;  - RAX:  Return value (address of string passed in)
-  ;  - RDI:  Pointer to dest addr
-  ;  - RDX:  Pointer to src addr
-  ;  - ECX:  Number of bytes to set; this reg is used by LOOP
+  ;  - RDI:  Pointer to dest memory region
+  ;  - RSI:  Pointer to src memory region
+  ;  - RDX:  Pointer to last address to copy + 1
   ;  - R11b: Temporary storage
-  cmp  ecx, 0
-  je   memcpy_end
-memcpy_loop:
-  mov  bl, [rdx]
-  mov  [rdi], bl
-  inc  rdx
+  cmp  rdi, rdx
+  je   .end
+.loop:
+  mov  r11b, [rsi]      ; Read byte from src memory
+  mov  [rdi], r11b      ; Write byte to dest memory
+  inc  rsi              ; Advance pointers
   inc  rdi
-  loop memcpy_loop
-memcpy_end:
+  cmp  rdi, rdx         ; Check loop bounds
+  jb   .loop
+.end:
   ret                   ; Return control
