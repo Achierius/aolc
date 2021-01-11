@@ -21,33 +21,22 @@ _strlen:
 strlen:
   xorps        xmm0, xmm0
   mov          rsi, rdi
+
   test         dil, 0x0F     ; Check for alignment on a 16-byte boundary
-  jz           sse_scan      ;  skip alignment if so, go straight to vector-ops
-
-  ; Uses standard bit hacks to read 8 bytes at a time
-  ; (((v) - 0x01010101UL) & ~(v) & 0x80808080UL)
-  ; rcx will contain the ((v) - 0x01010101UL); rdx the ~(v) & (0x80808080UL).
-byte_scan:
-  movdqu       xmm2, [rdi]
-  pcmpeqb      xmm2, xmm0
-  ptest        xmm0, xmm2
-  jc           sse_scan
-.null_byte:
-  pmovmskb     edx,  xmm2
-  bsf          ecx,  edx
-  add          rdi,  rcx
-  jmp          done
-
-; Uses SSE instructions to read 16 bytes at a time;
-; we only do this at most once in order to align to a 32B boundary, after which point we fall through to AVX.
-ALIGN 16
-sse_scan:
+  jz           align_32     ;  skip alignment if so, go straight to vector-ops
+align_16:
+  movdqu       xmm1, [rdi]
+  pcmpeqb      xmm1, xmm0
+  ptest        xmm0, xmm1
+  jnc          sse_done
   add          rdi,  15
   and          dil,  0xF0
 
+; Uses SSE instructions to read 16 bytes at a time;
+; we only do this at most once in order to align to a 32B boundary, after which point we fall through to AVX.
+align_32:
   bt           rdi, 4       ; 'byte_scan' guarantees 16B alignment; this checks if it also gave us 32B alignment --
   jnc          avx2_scan    ;   if so, skip SSE entirely.
-  xor          rcx,  rcx
 
   ; Register Uses:
   ;  - RDI:  (Pre-) Pointer to string to search in
@@ -57,16 +46,12 @@ sse_scan:
   ;  - RCX:  Intermediate values
   movdqa       xmm1, [rdi]  ; Load 16 bytes of string into register
   pcmpeqb      xmm1, xmm0   ; Compare each byte against '\0'
-  pmovmskb     edx,  xmm1   ; Pull the leading bit from each byte in xmm1 -- 1 indicates a '\0' match
-  cmp          edx,  0      ; If the whole register is 0, then we ran into no null terminators --
-  jnz          .null_byte   ;  if it's not, then goto handler
+;pmovmskb     edx,  xmm1   ; Pull the leading bit from each byte in xmm1 -- 1 indicates a '\0' match
+;cmp          edx,  0      ; If the whole register is 0, then we ran into no null terminators --
+  ptest        xmm0, xmm1
+  jnc          sse_done   ;  if it's not, then goto handler
   add          rdi,  16     ; If so though, then just add 16 and move on to AVX
-  jmp          avx2_scan
-
-.null_byte:
-  bsf          ecx,  edx     ; Otherwise, count how many leading non-null bytes we had,
-  add          rdi,  rcx    ;  add them to our count,
-  jmp          done         ;  and return.
+ ;jmp          avx2_scan
   
 
 ; Was experiencing massive slowdowns without this present --
@@ -139,3 +124,13 @@ done:
   sub          rax, rsi    ;   minus the stored value of the string base ptr
   vzeroall                 ; Architecture-required or we'll kill succeeding programs
   ret                      ; Return control
+
+ALIGN 16
+sse_done:
+  pmovmskb     edx,  xmm1
+  bsf          ecx,  edx     ; Otherwise, count how many leading non-null bytes we had,
+  add          rdi,  rcx    ;  add them to our count,
+  mov          rax,  rdi
+  sub          rax,  rsi
+  vzeroall
+  ret
