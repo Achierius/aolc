@@ -19,6 +19,7 @@ SECTION .text
   ; aligned, and unaligned reads (e.g. vmovdqu) are notably slower.
 _strlen:
 strlen:
+  xorps        xmm0, xmm0
   mov          rsi, rdi
   test         dil, 0x0F     ; Check for alignment on a 16-byte boundary
   jz           sse_scan      ;  skip alignment if so, go straight to vector-ops
@@ -27,58 +28,26 @@ strlen:
   ; (((v) - 0x01010101UL) & ~(v) & 0x80808080UL)
   ; rcx will contain the ((v) - 0x01010101UL); rdx the ~(v) & (0x80808080UL).
 byte_scan:
-  nop
-  nop
-  nop
-  nop
-  test         dil, 0x07     ; Check for 8-byte alignment
-  jz           .upper
-.lower:                      ; Align onto an 8-byte boundary
-  mov          rdx, [rdi]    ; Loads the target string
-  mov          rcx,  rdx
-  ; Begin bit hack math
-  not          rdx
-  and          rdx, [himagic]
-  sub          rcx, [lomagic]; The result will have a 1 in the MSB of each byte that was '\0' in the original string
-  and          rdx, rcx      ; 
-  ; End bit hack math        ;
-  jnz          .null_byte    ; Goto null byte handler if no such 1s are present (qword is all 0);
-                             ; Otherwise, we still read a full 8 bytes, even if <8B from 16B boundary --
-  add          rdi, 8        ;  as such, after we (here) advance the source-string pointer by 8,
-  and          dil, 11111000B;  discard any bytes beyond the boundary; yes is a waste, but a small one 
-  test dil, 0x0F             ; Check if we're now 16-byte aligned
-  jz sse_scan                ;  if so,  goto vector instructions which require it
- ;jmp          .upper        ;  if not, fall through to the upper-qword handler.
-
-.upper:                      ; Align onto a 16-byte boundary -- see above comments for details
-  mov          rdx, [rdi]
-  mov          rcx,  rdx
-  ; Begin bit hack math
-  not          rdx
-  and          rdx, [himagic]
-  sub          rcx, [lomagic]
-  and          rdx, rcx
-  ; End bit hack math
-  jnz          .null_byte    ; Goto null byte handler if no such 1s are present (qword is all 0);
-  add          rdi, 8        ;  otherwise advance pointer by 8,
-  jmp sse_scan               ;  and proceed to vector operations.
-
-ALIGN 16
+  movdqu       xmm2, [rdi]
+  pcmpeqb      xmm2, xmm0
+  ptest        xmm0, xmm2
+  jc           sse_scan
 .null_byte:
-  bsf          rcx,  rdx     ; Otherwise, count how many leading non-null bits we had,
-  shr          rcx,  3       ;  convert from bits to bytes (e.g., 0x00008000 corresponds to _1_ byte before '\0')
-  add          rdi,  rcx     ;  add them to our count,
-  jmp          done          ;  and fall through to return.
-
+  pmovmskb     edx,  xmm2
+  bsf          ecx,  edx
+  add          rdi,  rcx
+  jmp          done
 
 ; Uses SSE instructions to read 16 bytes at a time;
 ; we only do this at most once in order to align to a 32B boundary, after which point we fall through to AVX.
 ALIGN 16
 sse_scan:
+  add          rdi,  15
+  and          dil,  0xF0
+
   bt           rdi, 4       ; 'byte_scan' guarantees 16B alignment; this checks if it also gave us 32B alignment --
   jnc          avx2_scan    ;   if so, skip SSE entirely.
   xor          rcx,  rcx
-  xorps        xmm0, xmm0
 
   ; Register Uses:
   ;  - RDI:  (Pre-) Pointer to string to search in
