@@ -43,7 +43,7 @@ byte_scan:
   and          rdx, rcx      ; 
   ; End bit hack math        ;
   jnz          .null_byte    ; Goto null byte handler if no such 1s are present (qword is all 0);
-                             ; Otherwise, note that we still read a full 8 bytes, even if we were <8 from the 16B boundary --
+                             ; Otherwise, we still read a full 8 bytes, even if <8B from 16B boundary --
   add          rdi, 8        ;  as such, after we (here) advance the source-string pointer by 8,
   and          dil, 11111000B;  discard any bytes beyond the boundary; yes is a waste, but a small one 
   test dil, 0x0F             ; Check if we're now 16-byte aligned
@@ -103,27 +103,6 @@ sse_scan:
 ; Was experiencing massive slowdowns without this present --
 ; has to do with L1i$ line size
 ALIGN 64
-;avx2_scan:
-;  vxorps       ymm0, ymm0
-;  jmp .loop_body            ; Small loop optimization (necessary to skip the ptr-advancement on the first loop)
-;  ; Register Uses:
-;  ;  - RDI:  (Pre-) Pointer to string to search in
-;  ;  - YMM0: 32-null-byte-mask (aka all zeroes)
-;  ;  - YMM1: 256-byte chunk of string, results of pcmpeqb
-;  ;  - RDX:  Generated comparison-to-null-byte bitmask
-;  ;  - RCX:  Intermediate values
-;ALIGN 16
-;.loop:
-;  add          rdi,  32     ; Advance string pointer -- skipped on first pass
-;.loop_body:
-;  vmovdqa      ymm1, [rdi]  ; Load 32 bytes of string into register
-;  vpcmpeqb     ymm1, ymm0   ; Compare each byte against '\0'
-;  vpmovmskb    rdx,  ymm1   ; Pull the leading bit from each byte in xmm1 -- 1 indicates a '\0' match
-;  cmp          rdx,  0      ; If the whole register is 0, then we ran into no null terminators --
-;  jz           .loop        ;  continue looping.
-;  bsf          rcx,  rdx    ; Otherwise, count how many leading non-null bytes we had,
-;  add          rdi,  rcx    ;  add then to our count,
-;  jmp          done         ;  and fall through to return.
 avx2_scan:
   vxorps       ymm0, ymm0
 ;  mov          rax, 0xFF
@@ -138,45 +117,24 @@ avx2_scan:
 ALIGN 16
 .loop:
   add          rdi,  128         ; Advance string pointer -- skipped on first pass
- ;mov           ax,  0xFFFF
- ;vpbroadcastb ymm7, ax
 .loop_body:
   vmovdqa      ymm3, [rdi +  0]  ; Load 32 bytes of string into register
   vpcmpeqb     ymm3, ymm0        ; Compare each byte against '\0'
   vmovdqa      ymm5, [rdi + 32]  ; Load 32 bytes of string into register
   vpcmpeqb     ymm5, ymm0        ; Compare each byte against '\0'
-  vpmaxub      ymm1, ymm3, ymm5
-  ;vptest       ymm0, ymm2        ; If the whole register is 0, then we ran into no null terminators --
-  ;jnc .end
-  ;vptest       ymm0, ymm3        ; If the whole register is 0, then we ran into no null terminators --
-  ;jnc .end
 
   vmovdqa      ymm4, [rdi + 64]  ; Load 32 bytes of string into register
   vpcmpeqb     ymm4, ymm0        ; Compare each byte against '\0'
   vmovdqa      ymm6, [rdi + 96]  ; Load 32 bytes of string into register
   vpcmpeqb     ymm6, ymm0        ; Compare each byte against '\0'
+
+  vpmaxub      ymm1, ymm3, ymm5
   vpmaxub      ymm2, ymm4, ymm6
 
   vpmaxub      ymm2, ymm1
   vptest       ymm0, ymm2
   jc           .loop
-  ;vptest       ymm0, ymm4        ; If the whole register is 0, then we ran into no null terminators --
-  ;jnc .end
-  ;vptest       ymm0, ymm5        ; If the whole register is 0, then we ran into no null terminators --
-  ;jnc .end
 
-;  setc         dl
-;  and          al, dl
-;  setc         dl
-;  and          al, dl
-;  setc         dl
-;  and          al, dl
-;  setc         dl
-;  and          al, dl
-;  jnc .end
-  
-;  jmp          .loop             ;  continue looping.
-;.end:
 avx2_nullcheck:
 .bytes_0~32:
   vptest       ymm0, ymm3
@@ -203,11 +161,9 @@ avx2_nullcheck:
   vpmovmskb    rdx,  ymm6
  ;jmp .extract_byte
 .extract_byte:
- ;vpmovmskb    rdx,  ymm2   ; Pull the leading bit from each byte in xmm1 -- 1 indicates a '\0' match
   bsf          rcx,  rdx    ; Otherwise, count how many leading non-null bytes we had,
   add          rdi,  rcx    ;  add then to our count,
-; jmp          done         ;  and fall through to return.
-
+ ;jmp          done         ;  and fall through to return.
 
 done:
   mov          rax, rdi    ; The string length is equal to our current ptr
