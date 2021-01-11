@@ -103,9 +103,32 @@ sse_scan:
 ; Was experiencing massive slowdowns without this present --
 ; has to do with L1i$ line size
 ALIGN 64
+;avx2_scan:
+;  vxorps       ymm0, ymm0
+;  jmp .loop_body            ; Small loop optimization (necessary to skip the ptr-advancement on the first loop)
+;  ; Register Uses:
+;  ;  - RDI:  (Pre-) Pointer to string to search in
+;  ;  - YMM0: 32-null-byte-mask (aka all zeroes)
+;  ;  - YMM1: 256-byte chunk of string, results of pcmpeqb
+;  ;  - RDX:  Generated comparison-to-null-byte bitmask
+;  ;  - RCX:  Intermediate values
+;ALIGN 16
+;.loop:
+;  add          rdi,  32     ; Advance string pointer -- skipped on first pass
+;.loop_body:
+;  vmovdqa      ymm1, [rdi]  ; Load 32 bytes of string into register
+;  vpcmpeqb     ymm1, ymm0   ; Compare each byte against '\0'
+;  vpmovmskb    rdx,  ymm1   ; Pull the leading bit from each byte in xmm1 -- 1 indicates a '\0' match
+;  cmp          rdx,  0      ; If the whole register is 0, then we ran into no null terminators --
+;  jz           .loop        ;  continue looping.
+;  bsf          rcx,  rdx    ; Otherwise, count how many leading non-null bytes we had,
+;  add          rdi,  rcx    ;  add then to our count,
+;  jmp          done         ;  and fall through to return.
 avx2_scan:
   vxorps       ymm0, ymm0
-  jmp .loop_body            ; Small loop optimization (necessary to skip the ptr-advancement on the first loop)
+;  mov          rax, 0xFF
+;  jmp .loop_body            ; Small loop optimization (necessary to skip the ptr-advancement on the first loop)
+  sub          rdi,  128
   ; Register Uses:
   ;  - RDI:  (Pre-) Pointer to string to search in
   ;  - YMM0: 32-null-byte-mask (aka all zeroes)
@@ -114,16 +137,76 @@ avx2_scan:
   ;  - RCX:  Intermediate values
 ALIGN 16
 .loop:
-  add          rdi,  32     ; Advance string pointer -- skipped on first pass
+  add          rdi,  128         ; Advance string pointer -- skipped on first pass
+ ;mov           ax,  0xFFFF
+ ;vpbroadcastb ymm7, ax
 .loop_body:
-  vmovdqa      ymm1, [rdi]  ; Load 32 bytes of string into register
-  vpcmpeqb     ymm1, ymm0   ; Compare each byte against '\0'
-  vpmovmskb    rdx,  ymm1   ; Pull the leading bit from each byte in xmm1 -- 1 indicates a '\0' match
-  cmp          rdx,  0      ; If the whole register is 0, then we ran into no null terminators --
-  jz           .loop        ;  continue looping.
+  vmovdqa      ymm3, [rdi +  0]  ; Load 32 bytes of string into register
+  vpcmpeqb     ymm3, ymm0        ; Compare each byte against '\0'
+  vmovdqa      ymm5, [rdi + 32]  ; Load 32 bytes of string into register
+  vpcmpeqb     ymm5, ymm0        ; Compare each byte against '\0'
+  vpmaxub      ymm1, ymm3, ymm5
+  ;vptest       ymm0, ymm2        ; If the whole register is 0, then we ran into no null terminators --
+  ;jnc .end
+  ;vptest       ymm0, ymm3        ; If the whole register is 0, then we ran into no null terminators --
+  ;jnc .end
+
+  vmovdqa      ymm4, [rdi + 64]  ; Load 32 bytes of string into register
+  vpcmpeqb     ymm4, ymm0        ; Compare each byte against '\0'
+  vmovdqa      ymm6, [rdi + 96]  ; Load 32 bytes of string into register
+  vpcmpeqb     ymm6, ymm0        ; Compare each byte against '\0'
+  vpmaxub      ymm2, ymm4, ymm6
+
+  vpmaxub      ymm2, ymm1
+  vptest       ymm0, ymm2
+  jc           .loop
+  ;vptest       ymm0, ymm4        ; If the whole register is 0, then we ran into no null terminators --
+  ;jnc .end
+  ;vptest       ymm0, ymm5        ; If the whole register is 0, then we ran into no null terminators --
+  ;jnc .end
+
+;  setc         dl
+;  and          al, dl
+;  setc         dl
+;  and          al, dl
+;  setc         dl
+;  and          al, dl
+;  setc         dl
+;  and          al, dl
+;  jnc .end
+  
+;  jmp          .loop             ;  continue looping.
+;.end:
+avx2_nullcheck:
+.bytes_0~32:
+  vptest       ymm0, ymm3
+  jc .bytes_32~64
+  add          rdi,  0
+  vpmovmskb    rdx,  ymm3
+  jmp .extract_byte
+.bytes_32~64:
+  vptest       ymm0, ymm5
+  jc .bytes_64~96
+  add          rdi,  32
+  vpmovmskb    rdx,  ymm5
+  jmp .extract_byte
+.bytes_64~96:
+  vptest       ymm0, ymm4
+  jc .bytes_96~128
+  add          rdi,  64
+  vpmovmskb    rdx,  ymm4
+  jmp .extract_byte
+.bytes_96~128:
+ ;vptest       ymm0, ymm6
+ ;jc .nowhere_lol
+  add          rdi,  96
+  vpmovmskb    rdx,  ymm6
+ ;jmp .extract_byte
+.extract_byte:
+ ;vpmovmskb    rdx,  ymm2   ; Pull the leading bit from each byte in xmm1 -- 1 indicates a '\0' match
   bsf          rcx,  rdx    ; Otherwise, count how many leading non-null bytes we had,
   add          rdi,  rcx    ;  add then to our count,
-  jmp          done         ;  and fall through to return.
+; jmp          done         ;  and fall through to return.
 
 
 done:
