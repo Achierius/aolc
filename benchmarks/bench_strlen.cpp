@@ -49,9 +49,36 @@ static void BM_Strlen_NBytes(benchmark::State& state, size_t len, size_t off) {
     delete[](buffer);
 }
 
+static void BM_strlen_arg(benchmark::State& state) {
+    size_t len = state.range(0);
+    char* str = new char[len];
+    memset(str, 'x', len);
+    str[len - 1] = '\0';
+
+    for (auto _ : state) {
+#ifdef __BENCH_AOLC__
+            benchmark::DoNotOptimize(_strlen(str));
+#elif  __BENCH_GLIBC__
+            benchmark::DoNotOptimize(strlen(str));
+#elif  __BENCH_MUSL__
+            __builtin_unreachable();
+#else
+            __builtin_unreachable();
+#endif
+            benchmark::ClobberMemory();
+    }
+    state.SetComplexityN(state.range(0));
+    state.SetBytesProcessed(int64_t(state.iterations()) *
+                            int64_t(len));
+
+    delete[] str;
+}
+
+BENCHMARK(BM_strlen_arg)->RangeMultiplier(2)->Range(1<<10, 1<<18)->Complexity(benchmark::oN);
+
 int main(int argc, char** argv) {
     std::string str_base = "Strlen-Len";
-    std::array test_lengths = {4, 8, 16, 32, 64, 256, 1024, 4096, 16384};//, 1, 10, 100, 1000, 10000};
+    std::array test_lengths = {8, 16, 32, 64, 256, 1024, 4096};
     for (auto len : test_lengths) {
         benchmark::RegisterBenchmark((str_base + std::to_string(len)).c_str(), BM_Strlen_NBytes,
                                      len, 0);
@@ -66,6 +93,9 @@ int main(int argc, char** argv) {
                                          len, off);
         }
     }
+
+//                            1*4096, 2*4096, 3*4096, 4*4096, 5*4096, 6*4096, 7*4096, 8*4096};//, 1, 10, 100, 1000, 10000};
+
     benchmark::Initialize(&argc, argv);
     benchmark::RunSpecifiedBenchmarks();
 }
