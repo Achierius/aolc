@@ -6,8 +6,14 @@
 #include <array>
 #include <functional>
 #include <algorithm>
+#include <cassert>
 #include "aolc/compare_buffer_functions.h"
+#include "aolc/sysdeps.h"
 #include "gtest/gtest.h"
+
+#ifdef __ANY_POSIX__
+#include <sys/mman.h>
+#endif
 
 void CompareStrlenEval(const char* s1,
                        const char* comment) {
@@ -99,4 +105,73 @@ TEST(strlen, Alignments) {
     for (size_t off = kBaseOffset; off < kMaxOffset; off++) {
         CompareStrlenEval(buffer + off, ("strlen aligned " + std::to_string(off) + " (mod 64)").c_str()); 
     }
+}
+
+#ifdef __ANY_POSIX__
+TEST(strlen, NoWrite) {
+    const size_t kPageBytes = 2 << 12; // 4096
+    const size_t kBufferLen = kPageBytes;
+
+    char* buff = nullptr;
+    buff = (char*) mmap(NULL, kPageBytes, PROT_READ | PROT_WRITE,
+                        MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    assert(buff != nullptr);
+    assert((intptr_t) buff % 4096 == 0);
+
+    memset(buff, 'f', kBufferLen);
+    buff[kBufferLen-1] = '\0';
+
+    assert(mprotect(buff, kBufferLen, PROT_READ) == 0);
+
+    for (off_t i = 0; i < 64; i++) {
+        volatile int x = _strlen(buff + i);
+    }
+
+    for (off_t i = 0; i < kPageBytes - 1; i++) {
+        EXPECT_EQ(buff[i], 'f');
+    }
+    EXPECT_EQ(buff[kPageBytes - 1], '\0');
+
+
+    munmap(buff, kBufferLen + kPageBytes);
+}
+#endif
+
+
+TEST(strlen, Page) {
+    const size_t kPageBytes = 2 << 12; // 4096
+    const size_t kBufferPadding = 0;
+    const size_t kBufferLen = kPageBytes - kBufferPadding;
+
+    char* buff = nullptr;
+#ifdef __ANY_POSIX__
+    buff = (char*) mmap(NULL, 2*kPageBytes, PROT_READ | PROT_WRITE,
+                        MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+#else
+    char* arr = (char*) aligned_alloc(kPageBytes, kBufferLen);
+    buff = arr;
+#endif
+    assert(buff != nullptr);
+    assert((intptr_t) buff % 4096 == 0);
+
+    memset(buff, 'f', kBufferLen);
+    buff[kBufferLen-1] = '\0';
+
+    assert(mprotect(buff, kBufferLen, PROT_READ) == 0);
+    assert(mprotect(buff + kBufferLen, kPageBytes, PROT_NONE) == 0);
+
+    //EXPECT_EXIT({
+        for (off_t off = 0; off < kBufferLen; off++) {
+            char* str = buff + off;
+            SCOPED_TRACE("testing at offset " + std::to_string(off));
+            volatile int x = _strlen(str); 
+        }
+    //    exit(0);
+    //}, ::testing::ExitedWithCode(0), "");
+
+#ifdef __ANY_POSIX__
+    munmap(buff, kBufferLen + kPageBytes);
+#else
+    free(buff);
+#endif
 }
