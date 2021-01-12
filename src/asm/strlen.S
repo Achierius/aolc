@@ -22,14 +22,15 @@ strlen:
   xorps        xmm0, xmm0
   mov          rsi, rdi
 
-  test         dil, 0x0F     ; Check for alignment on a 16-byte boundary
-  jz           align_32     ;  skip alignment if so, go straight to vector-ops
+  ;test         dil, 0x0F     ; Check for alignment on a 16-byte boundary
+  ;jz           align_32     ;  skip alignment if so, go straight to vector-ops
+
 align_16:
   movdqu       xmm1, [rdi]
   pcmpeqb      xmm1, xmm0
   ptest        xmm0, xmm1
   jnc          sse_done
-  add          rdi,  15
+  add          rdi,  16
   and          dil,  0xF0
 
 ; Uses SSE instructions to read 16 bytes at a time;
@@ -77,12 +78,13 @@ ALIGN 16
   vmovdqa      ymm5, [rdi + 32]  ; Load 32 bytes of string into register
   vpcmpeqb     ymm5, ymm0        ; Compare each byte against '\0'
 
+  vpmaxub      ymm1, ymm3, ymm5
+
   vmovdqa      ymm4, [rdi + 64]  ; Load 32 bytes of string into register
   vpcmpeqb     ymm4, ymm0        ; Compare each byte against '\0'
   vmovdqa      ymm6, [rdi + 96]  ; Load 32 bytes of string into register
   vpcmpeqb     ymm6, ymm0        ; Compare each byte against '\0'
 
-  vpmaxub      ymm1, ymm3, ymm5
   vpmaxub      ymm2, ymm4, ymm6
 
   vpmaxub      ymm2, ymm1
