@@ -1,4 +1,4 @@
-# aocl
+# aolc
 
 ## Description
 In essence, this project is implementation of `<string.h>` in assembly.
