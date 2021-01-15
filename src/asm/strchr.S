@@ -14,11 +14,11 @@ strchr:
   xor rcx, rcx
 
 loop:
-  cmp [rax], rcx
-  je eol
-
   cmp [rax], dl
   je strchr_end
+
+  cmp [rax], cl
+  je eol
 
   inc rax
   
