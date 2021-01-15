@@ -8,13 +8,16 @@ SECTION .text
 
 _strchr:
 strchr:
-  mov rdi, rax
+
+  mov rax, rdi
+  mov rdx, rsi
+  xor rcx, rcx
 
 loop:
-  cmp qword [rax], 0
+  cmp [rax], rcx
   je eol
 
-  cmp [rax], rsi
+  cmp [rax], dl
   je strchr_end
 
   inc rax
