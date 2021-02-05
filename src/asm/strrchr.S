@@ -16,13 +16,13 @@ strrchr:
 
   call _strlen
 
-  mov rdx, rax
+  mov rdx, rax  ; Length of string in rdx
 
-  pop rcx
-  pop rax
+  pop rcx       ; Search char in rcx
+  pop rax       ; Start of string
 
-  mov rsi, rax  ; Start of string
-  add rax, rdx
+  mov rsi, rax  ; Store start of string
+  add rax, rdx  ; Work from end of string
 
 loop:
  cmp [rax], cl 
