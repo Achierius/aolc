@@ -13,8 +13,8 @@ strchr:
   mov rdx, rsi
   xor rcx, rcx
 
-loop:
-  cmp [rax], dl
+.loop:
+  cmp [rax], dl  ; Look for character before null byte
   je strchr_end
 
   cmp [rax], cl
@@ -22,7 +22,7 @@ loop:
 
   inc rax
   
-  jmp loop
+  jmp .loop
 
 eol:
   xor rax, rax

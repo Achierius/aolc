@@ -24,7 +24,7 @@ strrchr:
   mov rsi, rax  ; Store start of string
   add rax, rdx  ; Work from end of string
 
-loop:
+.loop:
  cmp [rax], cl 
  je strrchr_end
 
@@ -33,7 +33,7 @@ loop:
 
  dec rax
 
- jmp loop
+ jmp .loop
   
 eol:
   xor rax, rax

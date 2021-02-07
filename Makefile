@@ -45,7 +45,7 @@ GTEST_INCLUDE_DIR = $(GTEST_DIR)/googletest/include
 GTEST_LIBS = $(GTEST_DIR)/lib/libgtest_main.a $(GTEST_DIR)/lib/libgtest.a
 
 
-IMPLEMENTED_STRINGH_FNS = memcpy memset strchr \
+IMPLEMENTED_STRINGH_FNS = memcpy memset strchr strrchr \
 	      									strcpy strncpy strlen
 
 STRING_FILES_ASM = $(addprefix $(ASM_SRC_DIR)/,$(addsuffix .S,$(STRINGH_FNS)))
