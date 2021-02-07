@@ -48,8 +48,8 @@ project as a submodule - currently, google/googletest and google/benchmark.
 | `<string.h>`  | memchr       |      TODO      |      Core      ||
 | `<string.h>`  | memcmp       |      TODO      |      Core      ||
 | `<string.h>`  | memset       |       ✔        |      Core      | Marcus Plutowski <achierius@gmail.com> |
-| `<string.h>`  | strcat       |      TODO      |      Core      ||
-| `<string.h>`  | strncat      |      TODO      |      Core      ||
+| `<string.h>`  | strcat       |      TODO      |      Core      | Chris Carbone <chris.m.carbone@gmail.com |
+| `<string.h>`  | strncat      |      TODO      |      Core      | Chris Carbone <chris.m.carbone@gmail.com |
 | `<string.h>`  | strchr       |      TODO      |      Core      ||
 | `<string.h>`  | strrchr      |      TODO      |      Core      ||
 | `<string.h>`  | strcmp       |      WIP       |      Core      | Scott Durand <sdurand543@berkeley.edu> |
