@@ -20,6 +20,7 @@ void CompareMemmoveEval(const char* s1, const char* s2,
 }
 
 TEST(memmove, Basic) {
+
     char s1[] = {'a', 'a', 'a', 'a', 'a', 's', 's', 's',
                  's', 's', 's', 'd', 'd', 'd', 'd', 'd',
                  'd', 'd', 'd', 'd', 'd', 'd'};
@@ -36,6 +37,7 @@ TEST(memmove, Basic) {
 }
 
 TEST(memmove, Overlapping) {
+
     char s1[] = {'a', 'a', 'a', 'a', 'a', 's', 's', 's', 's', 's', 's', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd', 'd'};
     char s2[] = {'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x'};
 

@@ -43,9 +43,10 @@ project as a submodule - currently, google/googletest and google/benchmark.
 ## Implementation Status
 | Specification |  C Function  |  Impl. Status  |  Test Coverage |                  Owner                 |
 |:-------------:|:-------------|:--------------:|:--------------:|:---------------------------------------|
+
 | `<string.h>`  | memcpy       |       ✔        |      Core      | Marcus Plutowski <achierius@gmail.com> |
-| `<string.h>`  | memmove      |      TODO      |      Core      | Jiahong Long <sushisharkjl>            |
-| `<string.h>`  | memchr       |      TODO      |      Core      ||
+| `<string.h>`  | memmove      |      TODO      |      Core      | Jiahong Long <j4long@ucsd.edu>            |
+| `<string.h>`  | memchr       |      TODO      |      Core      | Jiahong Long <j4long@ucsd.edu> |
 | `<string.h>`  | memcmp       |      TODO      |      Core      ||
 | `<string.h>`  | memset       |       ✔        |      Core      | Marcus Plutowski <achierius@gmail.com> |
 | `<string.h>`  | strcat       |      TODO      |      Core      | Chris Carbone <chris.m.carbone@gmail.com |
