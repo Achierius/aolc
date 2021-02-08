@@ -1,4 +1,4 @@
-# aocl
+# aolc
 
 ## Description
 In essence, this project is implementation of `<string.h>` in assembly.
@@ -43,38 +43,38 @@ project as a submodule - currently, google/googletest and google/benchmark.
 ## Implementation Status
 | Specification |  C Function  |  Impl. Status  |  Test Coverage |                  Owner                 |
 |:-------------:|:-------------|:--------------:|:--------------:|:---------------------------------------|
-| `<string.h>`  | memcpy       |       ✔        |      WIP       | Marcus Plutowski <achierius@gmail.com> |
-| `<string.h>`  | memmove      |      TODO      |      WIP       | Jiahong Long <j4long@ucsd.edu>            |
-| `<string.h>`  | memchr       |      WIP      |      WIP      | Jiahong Long <j4long@ucsd.edu> |
-| `<string.h>`  | memcmp       |      TODO      |      WIP       ||
-| `<string.h>`  | memset       |       ✔        |      WIP       | Marcus Plutowski <achierius@gmail.com> |
-| `<string.h>`  | strcat       |      TODO      |      TODO      ||
-| `<string.h>`  | strncat      |      TODO      |      TODO      ||
-| `<string.h>`  | strchr       |      TODO      |      TODO      ||
-| `<string.h>`  | strrchr      |      TODO      |      TODO      ||
-| `<string.h>`  | strcmp       |      WIP       |      TODO      | Scott Durand <sdurand543@berkeley.edu> |
-| `<string.h>`  | strncmp      |      WIP       |      TODO      | Scott Durand <sdurand543@berkeley.edu> |
-| `<string.h>`  | strcoll      |      TODO      |      TODO      ||
-| `<string.h>`  | strcpy       |       ✔        |      WIP       | Marcus Plutowski <achierius@gmail.com> |
-| `<string.h>`  | strncpy      |       ✔        |      WIP       | Marcus Plutowski <achierius@gmail.com> |
-| `<string.h>`  | strerror     |      TODO      |       ✔        ||
-| `<string.h>`  | strlen       |       ✔        |      WIP       | Marcus Plutowski <achierius@gmail.com> |
-| `<string.h>`  | strspn       |      TODO      |      WIP       ||
-| `<string.h>`  | strcspn      |      TODO      |      WIP       ||
-| `<string.h>`  | strpbrk      |      TODO      |      WIP       ||
-| `<string.h>`  | strstr       |      TODO      |      WIP       | Marcus Plutowski <achierius@gmail.com> |
-| `<string.h>`  | strtok       |      TODO      |      TODO      ||
-| `<string.h>`  | strxfrm      |      TODO      |      TODO      ||
-| GNU           | mempcpy      |      TBD       |      TBD       ||
-| GNU, POSIX    | strerror\_r  |      TBD       |      TBD       ||
-| WDTR 24731    | strcat\_s    |      TBD       |      TBD       ||
-| WDTR 24731    | strcpy\_s    |      TBD       |      TBD       ||
-| Open/Free BSD | strlcat      |      TODO      |      TODO      ||
-| Open/Free BSD | strlcpy      |      TODO      |      TODO      ||
-| BSD, POSIX    | strdup       |      TODO      |      TODO      ||
-| POSIX 2008    | strsignal    |      TBD       |      TBD       ||
-| POSIX         | strtok\_r    |      TBD       |      TBD       ||
-| POSIX         | memccpy      |      TBD       |      TBD       ||
+| `<string.h>`  | memcpy       |       ✔        |      Core      | Marcus Plutowski <achierius@gmail.com> |
+| `<string.h>`  | memmove      |      TODO      |      Core      | Jiahong Long <j4long@ucsd.edu>            |
+| `<string.h>`  | memchr       |      TODO      |      Core      | Jiahong Long <j4long@ucsd.edu> |
+| `<string.h>`  | memcmp       |      TODO      |      Core      ||
+| `<string.h>`  | memset       |       ✔        |      Core      | Marcus Plutowski <achierius@gmail.com> |
+| `<string.h>`  | strcat       |      TODO      |      Core      ||
+| `<string.h>`  | strncat      |      TODO      |      Core      | Chris Carbone <chris.m.carbone@gmail.com> |
+| `<string.h>`  | strchr       |      TODO      |      Core      ||
+| `<string.h>`  | strrchr      |      TODO      |      Core      ||
+| `<string.h>`  | strcmp       |      WIP       |      Core      | Scott Durand <sdurand543@berkeley.edu> |
+| `<string.h>`  | strncmp      |      WIP       |      Core      | Scott Durand <sdurand543@berkeley.edu> |
+| `<string.h>`  | strcoll      |      TODO      |      Core      ||
+| `<string.h>`  | strcpy       |       ✔        |      Core      | Marcus Plutowski <achierius@gmail.com> |
+| `<string.h>`  | strncpy      |       ✔        |      Core      | Marcus Plutowski <achierius@gmail.com> |
+| `<string.h>`  | strerror     |      TODO      |      Core      ||
+| `<string.h>`  | strlen       |       ✔        |      Core      | Marcus Plutowski <achierius@gmail.com> |
+| `<string.h>`  | strspn       |      TODO      |      Core      ||
+| `<string.h>`  | strcspn      |      TODO      |      Core      ||
+| `<string.h>`  | strpbrk      |      TODO      |      Core      | Marcus Plutowski <achierius@gmail.com> |
+| `<string.h>`  | strstr       |       ✔        |      Core      | Marcus Plutowski <achierius@gmail.com> |
+| `<string.h>`  | strtok       |      TODO      |      Core      ||
+| `<string.h>`  | strxfrm      |      TODO      |      Core      ||
+| GNU           | mempcpy      |      TBD       |      Core      ||
+| GNU, POSIX    | strerror\_r  |      TBD       |      Core      ||
+| WDTR 24731    | strcat\_s    |      TBD       |      Core      ||
+| WDTR 24731    | strcpy\_s    |      TBD       |      Core      ||
+| Open/Free BSD | strlcat      |      TODO      |      Core      ||
+| Open/Free BSD | strlcpy      |      TODO      |      Core      ||
+| BSD, POSIX    | strdup       |      TODO      |      Core      ||
+| POSIX 2008    | strsignal    |      TBD       |      Core      ||
+| POSIX         | strtok\_r    |      TBD       |      Core      ||
+| POSIX         | memccpy      |      TBD       |      Core      ||
 
 ## Usage
 In order to use the functions implemented thus far, simply run `make lib` and
