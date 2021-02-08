@@ -1,14 +1,15 @@
 #include "aolc/_test_string.h"
 #include <string.h>
 #include <signal.h>
+#include <stdio.h>
 
 #include "aolc/compare_buffer_functions.h"
 
 #include "gtest/gtest.h"
 
-char buff_a[] = {'\0'};
-char buff_b[] = {'\0'};
-char buff_strcat[] = {'\0', '\0'};
+char buff_a[] __attribute__ ((aligned (16))) = {'\0'};
+char buff_b[] __attribute__ ((aligned (16))) = {'\0'};
+char buff_strcat[] __attribute__ ((aligned (16))) = {'\0', '\0'};
 
 TEST(memcpy, Linkage)
 {

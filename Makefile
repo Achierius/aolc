@@ -28,11 +28,13 @@ TESTS_DIR = tests
 BENCH_DIR = benchmarks
 SUBMODULE_DIR = external
 
-C_STUB_FILE = string_stubs.c
 LIBNAME = aolc
 
-TEST_NAMES = test_linkages test_strlen test_strcpy test_strncpy test_memcpy test_memset \
-						 test_memmove test_strstr test_errno test_strspn test_strcspn test_strpbrk
+STRINGH_FNS  = memcpy memmove memchr memcmp memset strcat strncat strchr \
+               strrchr strcmp strncmp strcoll strcpy strncpy strerror strlen \
+							 strspn strcspn strpbrk strstr strtok strxfrm \
+
+TEST_NAMES = test_linkages $(addprefix test_,$(STRINGH_FNS))
 TESTS = $(addprefix $(TESTS_DIR)/,$(addsuffix .cpp,$(TEST_NAMES)))
 TESTS_O = $(addprefix $(TESTS_DIR)/,$(addsuffix .cpp,$(TEST_NAMES)))
 TEST_LIBNAMES = test_$(LIBNAME).a# sys_libc.a
@@ -42,10 +44,6 @@ GTEST_DIR = $(SUBMODULE_DIR)/googletest
 GTEST_INCLUDE_DIR = $(GTEST_DIR)/googletest/include
 GTEST_LIBS = $(GTEST_DIR)/lib/libgtest_main.a $(GTEST_DIR)/lib/libgtest.a
 
-STRINGH_FNS  = memcpy memmove memchr memcmp memset strcat strncat strchr \
-               strrchr strcmp strncmp strcoll strcpy strncpy strerror strlen \
-							 strspn strcspn strpbrk strstr strtok strxfrm \
-							 hello_world \
 
 IMPLEMENTED_STRINGH_FNS = memcpy memset \
 	      									strcpy strncpy strlen
@@ -59,17 +57,23 @@ BENCHMARK_LIBS = $(BENCHMARK_DIR)/src/libbenchmark.a
 BENCHMARK_INCLUDE_DIR = $(BENCHMARK_DIR)/include
 
 
-
-
 regression: check
 
 check: GTEST_FILTER = $(subst $(SPACE),:,$(addsuffix .*,$(IMPLEMENTED_STRINGH_FNS)))
 check: $(BIN_DIR)/test_suite.o FORCE
 	$< --gtest_filter=$(GTEST_FILTER) 
 
-check-all: GTEST_FILTER = $(subst $(SPACE),:,$(addsuffix .*,$(STRINGH_FNS)))
-check-all: $(BIN_DIR)/test_suite.o FORCE
-	$< --gtest_filter=*
+check-full: GTEST_FILTER = $(subst $(SPACE),:,$(addsuffix .*,$(STRINGH_FNS)))
+check-full: $(BIN_DIR)/test_suite.o FORCE
+	$< --gtest_filter=$(GTEST_FILTER)
+
+check-sanity: GTEST_FILTER = $(subst $(SPACE),:,$(addsuffix .*,$(STRINGH_FNS)))
+check-sanity: $(BIN_DIR)/meta_tests.o FORCE
+	$< --gtest_filter=$(GTEST_FILTER)
+
+check-%: GTEST_FILTER = $**
+check-%: $(BIN_DIR)/test_suite.o FORCE
+	$< --gtest_filter=$(GTEST_FILTER)
 
 # !!! RECURSIVE MAKE !!!
 $(GTEST_LIBS) $(GBENCH_LIBS):
@@ -77,7 +81,12 @@ $(GTEST_LIBS) $(GBENCH_LIBS):
 	(cd $(SUBMODULE_DIR) && make libs)
 
 $(BIN_DIR)/test_suite.o: external/googletest/lib/libgtest_main.a external/googletest/lib/libgtest.a \
-	                       $(TESTS) $(TESTS_DIR)/compare_buffer_functions.cpp $(LIBS_DIR)/test_$(LIBNAME).a  \
+	                       $(TESTS) $(INTERNAL_INCLUDE_DIR)/aolc/compare_buffer_functions.h $(LIBS_DIR)/test_$(LIBNAME).a  \
+												 | $(BIN_DIR)/.sent
+	$(CC) $(CFLAGS_CORE) $(CFLAGS_OPTM) -O1 -I$(INTERNAL_INCLUDE_DIR) -I$(GTEST_INCLUDE_DIR) $^ -o$@
+
+$(BIN_DIR)/meta_tests.o: external/googletest/lib/libgtest_main.a external/googletest/lib/libgtest.a \
+	                       $(TESTS) $(INTERNAL_INCLUDE_DIR)/aolc/compare_buffer_functions.h $(LIBS_DIR)/glibc_standin_test_$(LIBNAME).a\
 												 | $(BIN_DIR)/.sent
 	$(CC) $(CFLAGS_CORE) $(CFLAGS_OPTM) -O1 -I$(INTERNAL_INCLUDE_DIR) -I$(GTEST_INCLUDE_DIR) $^ -o$@
 
@@ -124,18 +133,24 @@ clean-all: clean
 	(cd $(SUBMODULE_DIR) && make clean)
 
 
-
 libs: $(TEST_LIBS) $(LIBS_DIR)/$(LIBNAME).a
 
-$(LIBS_DIR)/$(LIBNAME).a: $(STRING_FILES_O) $(LIBS_DIR)/.sent
+$(LIBS_DIR)/$(LIBNAME).a: $(STRING_FILES_O) | $(LIBS_DIR)/.sent
 	@mkdir -p ./$(LIBS_DIR)
 	@mkdir -p ./$(BUILD_DIR)
 	ar rvs $@ $(STRING_FILES_O)
 
-$(LIBS_DIR)/test_$(LIBNAME).a: $(TEST_STRING_FILES_O) $(LIBS_DIR)/.sent
+$(LIBS_DIR)/test_$(LIBNAME).a: $(TEST_STRING_FILES_O) | $(LIBS_DIR)/.sent
 	@mkdir -p ./$(LIBS_DIR)
 	@mkdir -p ./$(BUILD_DIR)
 	ar rvs $@ $(TEST_STRING_FILES_O)
+
+$(LIBS_DIR)/glibc_standin_test_$(LIBNAME).a: $(BUILD_DIR)/glibc_standin_test_string.o | $(LIBS_DIR)/.sent
+	ar rvs $@ $<
+
+$(BUILD_DIR)/glibc_standin_test_string.o: CC = gcc -c
+$(BUILD_DIR)/glibc_standin_test_string.o: $(C_SRC_DIR)/sys_libc_standin.c
+	$(CC) $(CFLAGS_OPTM) -I$(INTERNAL_INCLUDE_DIR) $< -o $@
 
 $(STRING_FILES_O): $(BUILD_DIR)/%.o: $(ASM_SRC_DIR)/%.S | $(BUILD_DIR)/.sent
 	@echo " > Compiling assembly for $@..."
@@ -146,11 +161,7 @@ $(TEST_STRING_FILES_O): $(BUILD_DIR)/test_%.o: $(ASM_SRC_DIR)/%.S | $(BUILD_DIR)
 	$(ASMR) $(ASMFLAGS) $< -o $(BUILD_DIR)/test_$*.o
 
 
-
 .PRECIOUS: %/.sent
 %/.sent:
 	mkdir -p ${@D}
 	touch $@
-
-dirs:
-
