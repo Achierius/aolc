@@ -48,10 +48,10 @@ project as a submodule - currently, google/googletest and google/benchmark.
 | `<string.h>`  | memchr       |      TODO      |      Core      | Jiahong Long <j4long@ucsd.edu>         |
 | `<string.h>`  | memcmp       |      TODO      |      Core      ||
 | `<string.h>`  | memset       |       ✔        |      Core      | Marcus Plutowski <achierius@gmail.com> |
-| `<string.h>`  | strcat       |      TODO      |      Core      | Chris Carbone <chris.m.carbone@gmail.com> |
-| `<string.h>`  | strncat      |      TODO      |      Core      ||
-| `<string.h>`  | strchr       |      TODO      |      Core      | Chris Carbone <chris.m.carbone@gmail.com> |
-| `<string.h>`  | strrchr      |      TODO      |      Core      | Chris Carbone <chris.m.carbone@gmail.com> |
+| `<string.h>`  | strcat       |      WIP      |      Core      | Chris Carbone <chris.m.carbone@gmail.com> |
+| `<string.h>`  | strncat      |      WIP      |      Core      | Chris Carbone <chris.m.carbone@gmail.com> |
+| `<string.h>`  | strchr       |      WIP      |      Core      | Chris Carbone <chris.m.carbone@gmail.com> |
+| `<string.h>`  | strrchr      |      WIP      |      Core      | Chris Carbone <chris.m.carbone@gmail.com> |
 | `<string.h>`  | strcmp       |      WIP       |      Core      | Scott Durand <sdurand543@berkeley.edu> |
 | `<string.h>`  | strncmp      |      WIP       |      Core      | Scott Durand <sdurand543@berkeley.edu> |
 | `<string.h>`  | strcoll      |      TODO      |      Core      ||
@@ -182,7 +182,7 @@ Our priorities are broadly, in order from highest to lowest:
 Thus, when deciding where to put additional energy, we will firstly prioritize
 fixing existing implementations, followed by creating new implementations,
 optimizing existing implementations, and finally expanding support.
-### Inpsiration
+### Inspiration
 Implementation strategies broadly inspired by musl first and foremost, as well
 as by glibc.
 
