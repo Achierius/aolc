@@ -29,6 +29,9 @@ strcat:
   cmp [rcx], dil
   je .eol
 
+  inc rdx
+  inc rcx
+
   jmp .loop
 
 .eol:
