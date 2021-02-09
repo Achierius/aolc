@@ -38,3 +38,34 @@ TEST(strchr, Meta) {
     CompareBufferFuncEvalStrchr("X", 'X', 1, "x, x");
     CompareBufferFuncEvalStrchr("&", '&', 1, "x, x");
 }
+
+TEST(strchr, LongUnaligned) {
+    const char* str = "--------===================A=B=C=D=E=F=G=H=";
+
+    std::array<char, 8> toks = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'};
+    std::array<size_t, 8> offs = {0, 1, 2, 3, 4, 5, 6, 7};
+
+    for (size_t off : offs) {
+        for (char tok : toks) {
+            CompareBufferFuncEvalStrchr(str + off, tok, strlen(str),
+                                        ("off: " + std::to_string(off) + "; tok: " + std::to_string(tok)).c_str());
+        }
+    }
+}
+
+TEST(strchr, FalseFlags) {
+    const char* str = "1********2********3********4********\0abcd1234";
+    size_t str_len = strlen(str) + 10;
+
+    /* None of these should succeed */
+    CompareBufferFuncEvalStrchr(str, 'a', str_len, "str, 'a'");
+    CompareBufferFuncEvalStrchr(str, 'b', str_len, "str, 'b'");
+    CompareBufferFuncEvalStrchr(str, 'c', str_len, "str, 'c'");
+    CompareBufferFuncEvalStrchr(str, 'd', str_len, "str, 'd'");
+
+    /* All of these should succeed */
+    CompareBufferFuncEvalStrchr(str, '1', str_len, "str, '1'");
+    CompareBufferFuncEvalStrchr(str, '2', str_len, "str, '2'");
+    CompareBufferFuncEvalStrchr(str, '3', str_len, "str, '3'");
+    CompareBufferFuncEvalStrchr(str, '4', str_len, "str, '4'");
+}

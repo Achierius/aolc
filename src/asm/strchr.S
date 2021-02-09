@@ -8,5 +8,24 @@ SECTION .text
 
 _strchr:
 strchr:
-	mov eax, 0
+
+  mov rax, rdi
+  mov rdx, rsi
+  xor rcx, rcx
+
+.loop:
+  cmp [rax], dl  ; Look for character before null byte
+  je strchr_end
+
+  cmp [rax], cl
+  je eol
+
+  inc rax
+  
+  jmp .loop
+
+eol:
+  xor rax, rax
+
+strchr_end:
   ret                   ; Return control
