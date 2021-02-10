@@ -19,6 +19,7 @@ void CompareStrncatEval(const char* s1, const char* s2,
 }
 
 /* TODO actually test the 'n' part of str'n'cat */
+// ^include n=0 buffer overflow case
 
 TEST(strncat, Basic)
 {
