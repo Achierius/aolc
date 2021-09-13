@@ -4,7 +4,7 @@
 ![Issues](https://img.shields.io/github/issues/Achierius/aolc)
 
 ## Description
-In essence, this project is implementation of `<string.h>` in assembly.
+`aolc` is an optimized implementation of `<string.h>` in handwritten x86-64 assembly.
 In particular, this repository contains reimplementations of all functions
 defined in the C Standard for `<string.h>` via (mostly) x86 assembly, as well as
 a small amount of C code to export names, manage keyword definitions/reexports,
