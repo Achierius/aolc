@@ -1,5 +1,8 @@
 # aocl
 
+![Build](https://github.com/Achierius/aolc/actions/workflows/c-cpp.yml/badge.svg)
+![Issues](https://img.shields.io/github/issues/Achierius/aolc)
+
 ## Description
 In essence, this project is implementation of `<string.h>` in assembly.
 In particular, this repository contains reimplementations of all functions
